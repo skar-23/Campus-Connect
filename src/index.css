@@ -1,0 +1,57 @@
+/* Tell Tailwind to use the 'Inter' font for the body */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* LOFI THEME COLORS (HSL format for shadcn/ui) */
+    --background: 40 33% 95%; /* Warm, paper-like off-white: #F4F0E8 */
+    --foreground: 25 13% 25%; /* Soft, dark brown: #4A3F35 */
+
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 25 13% 25%; /* Soft, dark brown */
+
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 25 13% 25%; /* Soft, dark brown */
+
+    --primary: 217 33% 74%; /* Gentle, dusty blue: #A1B5D6 */
+    --primary-foreground: 25 13% 25%; /* Soft, dark brown text on blue */
+
+    --secondary: 40 33% 90%; /* Lighter version of background */
+    --secondary-foreground: 25 13% 25%;
+
+    --muted: 40 33% 85%;
+    --muted-foreground: 25 13% 35%;
+
+    --accent: 4 60% 77%; /* Warm, muted coral: #E8A09A */
+    --accent-foreground: 0 0% 100%; /* White text on coral */
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 33% 85%;
+    --input: 40 33% 88%;
+    --ring: 217 33% 74%; /* Gentle, dusty blue for focus rings */
+
+    --radius: 0.75rem; /* This will make corners more rounded */
+  }
+
+  /* This sets up a dark mode theme if you ever want one */
+  .dark {
+    /* Define dark mode colors here later if you wish */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif; /* Set the default font */
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif; /* Set the heading font */
+  }
+}
