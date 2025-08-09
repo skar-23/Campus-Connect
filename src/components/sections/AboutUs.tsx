@@ -6,21 +6,21 @@ const AboutUs: React.FC = () => {
   const features = [
     {
       icon: Users,
-      title: "Real Connections (Not LinkedIn Fake)",
+      title: "Your College Big Sibling",
       description:
-        "Connect with genuine seniors who actually want to help you succeed in college.",
+        "Get personalized guidance and unfiltered advice from experienced students who have been exactly where you are now.",
     },
     {
       icon: BookOpen,
-      title: "Learn the Real Stuff (Not Just Textbooks)",
+      title: "Beyond the Syllabus",
       description:
-        "Get insider knowledge about campus life, professors, and survival tips.",
+        "Dive into the valuable, non-academic knowledge of campus life, from navigating dorms to finding the best study spots.",
     },
     {
       icon: Zap,
-      title: "Level Up Your Intro Game 🚀",
+      title: "Cultivate Your Network",
       description:
-        "Master the art of making friends and building your college network.",
+        "Master the art of making friends and building professional connections that will last throughout your college career.",
     },
   ];
 

@@ -3,7 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Hero from "@/components/sections/Hero";
 import AboutUs from "@/components/sections/AboutUs";
-import Verification from "@/components/sections/Verification";
+import AdmissionsUpdate from "@/components/sections/AdmissionsUpdate";
 import ChaiThanks from "@/components/sections/ChaiThanks";
 import CTA from "@/components/sections/CTA";
 import Contact from "@/components/sections/Contact";
@@ -135,6 +135,19 @@ const Index: React.FC = () => {
           <Hero onLoginClick={handleLoginClick} />
         </section>
 
+        {/* Admissions Update Section (replaces How it Works) */}
+        <section
+          id="admissions-update"
+          data-animate
+          className={`transition-all duration-1000 delay-400 ${
+            isVisible["admissions-update"]
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-10"
+          }`}
+        >
+          <AdmissionsUpdate />
+        </section>
+
         {/* About Us Section */}
         <section
           id="about"
@@ -147,33 +160,6 @@ const Index: React.FC = () => {
         >
           <AboutUs />
         </section>
-
-        {/* Verification Section */}
-        <section
-          id="verification"
-          data-animate
-          className={`transition-all duration-1000 delay-400 ${
-            isVisible.verification
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-10"
-          }`}
-        >
-          <Verification />
-        </section>
-
-        {/* Chai Thanks Section */}
-        <section
-          id="chai"
-          data-animate
-          className={`transition-all duration-1000 delay-600 ${
-            isVisible.chai
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95"
-          }`}
-        >
-          <ChaiThanks />
-        </section>
-
         {/* CTA Section */}
         <section
           id="cta"
@@ -187,17 +173,17 @@ const Index: React.FC = () => {
           <CTA />
         </section>
 
-        {/* Contact Section */}
+        {/* Chai Thanks Section */}
         <section
-          id="contact"
+          id="chai"
           data-animate
-          className={`transition-all duration-1000 delay-1000 ${
-            isVisible.contact
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-10"
+          className={`transition-all duration-1000 delay-600 ${
+            isVisible.chai
+              ? "opacity-100 scale-100"
+              : "opacity-0 scale-95"
           }`}
         >
-          <Contact />
+          <ChaiThanks />
         </section>
       </main>
 

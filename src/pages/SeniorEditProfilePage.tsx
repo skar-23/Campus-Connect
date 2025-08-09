@@ -1,37 +1,66 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Save, User, MapPin, GraduationCap, CheckCircle, AlertTriangle, Check, ChevronDown, UserCheck, LogOut, Settings } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Loader2,
+  Save,
+  User,
+  CheckCircle,
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  LogOut,
+  Settings,
+  ArrowLeft,
+  Shield,
+  Key,
+  Mail,
+} from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+
+const predefinedBranches = [
+  "Computer Science Engineering",
+  "Information Technology",
+  "Civil Engineering",
+  "Mechanical Engineering",
+  "Electronics & Communication Engineering",
+  "Electrical Engineering",
+  "Chemical Engineering",
+  "Biotechnology",
+  "Industrial & Production Engineering",
+  "Instrumentation & Control Engineering",
+];
 
 const SeniorEditProfilePage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
-  const [branches, setBranches] = useState<string[]>([]);
+  const [branches] = useState<string[]>(predefinedBranches);
   const [branchSuggestions, setBranchSuggestions] = useState<string[]>([]);
   const [showBranchSuggestions, setShowBranchSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [branchLoading, setBranchLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(true);
   const branchInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [notification, setNotification] = useState<{
-    type: 'success' | 'error' | null;
+    type: "success" | "error" | null;
     message: string;
-  }>({ type: null, message: '' });
-
-  // Profile data from database
+  }>({ type: null, message: "" });
+  const [profileVisibility, setProfileVisibility] = useState(true);
   const [profile, setProfile] = useState<any>(null);
-
-  // Form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -42,27 +71,10 @@ const SeniorEditProfilePage: React.FC = () => {
     branch: "",
   });
 
-  // Predefined branches list
-  const predefinedBranches = [
-    "Computer Science Engineering",
-    "Information Technology",
-    "Civil Engineering",
-    "Mechanical Engineering",
-    "Electronics & Communication Engineering",
-    "Electrical Engineering",
-    "Chemical Engineering",
-    "Biotechnology",
-    "Industrial & Production Engineering",
-    "Instrumentation & Control Engineering",
-  ];
-
-  // Function to get branch from roll number
+  // Get branch from roll number
   const getBranchFromRollNo = (rollNo: string): string => {
     if (!rollNo || rollNo === "Not provided") return "";
-    
-    // Extract branch code (assuming format: YYXXXYYY where XXX is branch code)
     const branchCode = rollNo.substring(2, 5);
-    
     const branchMap: { [key: string]: string } = {
       "103": "Computer Science Engineering",
       "104": "Information Technology",
@@ -75,137 +87,97 @@ const SeniorEditProfilePage: React.FC = () => {
       "109": "Industrial & Production Engineering",
       "110": "Instrumentation & Control Engineering",
     };
-    
     return branchMap[branchCode] || "";
   };
 
-  // Function to find best matching branch
+  // Find best matching branch
   const findBestMatch = (input: string): string => {
     if (!input.trim()) return "";
-    
     const inputLower = input.toLowerCase().trim();
-    
-    // Exact match
-    const exactMatch = branches.find(branch => 
-      branch.toLowerCase() === inputLower
+    const exactMatch = branches.find(
+      (branch) => branch.toLowerCase() === inputLower
     );
     if (exactMatch) return exactMatch;
-    
-    // Starts with match
-    const startsWithMatch = branches.find(branch => 
+    const startsWithMatch = branches.find((branch) =>
       branch.toLowerCase().startsWith(inputLower)
     );
     if (startsWithMatch) return startsWithMatch;
-    
-    // Contains match
-    const containsMatch = branches.find(branch => 
+    const containsMatch = branches.find((branch) =>
       branch.toLowerCase().includes(inputLower)
     );
     if (containsMatch) return containsMatch;
-    
-    // Partial word match
-    const words = inputLower.split(' ');
-    const partialMatch = branches.find(branch => {
+    const words = inputLower.split(" ");
+    const partialMatch = branches.find((branch) => {
       const branchLower = branch.toLowerCase();
-      return words.every(word => branchLower.includes(word));
+      return words.every((word) => branchLower.includes(word));
     });
-    
     return partialMatch || "";
   };
 
   // Fetch user profile from database
   const fetchProfile = async () => {
     if (!user) return;
-    
     setProfileLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
         .single();
-
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-        console.error('Error fetching profile:', error);
-        return;
-      }
-
-      console.log('Fetched profile data:', data);
       setProfile(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
+    } catch {
+      // ignore
     } finally {
       setProfileLoading(false);
     }
   };
 
-  // Fetch branches from database or use predefined list
-  const fetchBranches = async () => {
-    setBranchLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('branches')
-        .select('name')
-        .order('name');
-
-      if (data && data.length > 0) {
-        const branchNames = data.map(branch => branch.name);
-        setBranches(branchNames);
-        console.log('Fetched branches from database:', branchNames);
-      } else {
-        setBranches(predefinedBranches);
-        console.log('Using predefined branches:', predefinedBranches);
-      }
-    } catch (error) {
-      console.warn('Could not fetch branches from database, using predefined list:', error);
-      setBranches(predefinedBranches);
-    } finally {
-      setBranchLoading(false);
-    }
-  };
-
   // Initialize form data from user and profile
   useEffect(() => {
-    if (user && branches.length > 0 && !profileLoading) {
+    if (user && !profileLoading) {
       const userData = user.user_metadata || {};
-      console.log('User metadata:', userData);
-      console.log('Profile data:', profile);
-      
-      // Try to get branch from multiple sources in priority order
       let userBranch = "";
-      
-      // 1. First try profile.branch (highest priority)
+
       if (profile?.branch && branches.includes(profile.branch)) {
         userBranch = profile.branch;
-        console.log('Using branch from profile:', userBranch);
-      }
-      // 2. Then try user metadata branch
-      else if (userData.branch && branches.includes(userData.branch)) {
+      } else if (userData.branch && branches.includes(userData.branch)) {
         userBranch = userData.branch;
-        console.log('Using branch from user metadata:', userBranch);
-      }
-      // 3. Then try to derive from roll number
-      else if (profile?.rollNo || profile?.college_id || userData.rollNo || userData.college_id) {
-        const rollNo = profile?.rollNo || profile?.college_id || userData.rollNo || userData.college_id;
+      } else if (
+        profile?.rollNo ||
+        profile?.college_id ||
+        userData.rollNo ||
+        userData.college_id
+      ) {
+        const rollNo =
+          profile?.rollNo ||
+          profile?.college_id ||
+          userData.rollNo ||
+          userData.college_id;
         const derivedBranch = getBranchFromRollNo(rollNo);
         if (derivedBranch && branches.includes(derivedBranch)) {
           userBranch = derivedBranch;
-          console.log('Derived branch from roll number:', userBranch);
         }
       }
-      
-      const newFormData = {
+
+      setFormData({
         name: profile?.name || userData.name || "",
         email: user.email || "",
-        phone: profile?.phoneNo || profile?.phone || userData.phoneNo || userData.phone || "",
+        phone:
+          profile?.phoneNo ||
+          profile?.phone ||
+          userData.phoneNo ||
+          userData.phone ||
+          "",
         city: profile?.city || userData.city || "",
         gender: profile?.gender || userData.gender || "",
-        rollNo: profile?.rollNo || profile?.college_id || userData.rollNo || userData.college_id || "",
+        rollNo:
+          profile?.rollNo ||
+          profile?.college_id ||
+          userData.rollNo ||
+          userData.college_id ||
+          "",
         branch: userBranch,
-      };
-      
-      console.log('Setting form data:', newFormData);
-      setFormData(newFormData);
+      });
     }
   }, [user, branches, profile, profileLoading]);
 
@@ -214,10 +186,9 @@ const SeniorEditProfilePage: React.FC = () => {
     if (formData.rollNo && branches.length > 0 && !formData.branch) {
       const derivedBranch = getBranchFromRollNo(formData.rollNo);
       if (derivedBranch && branches.includes(derivedBranch)) {
-        console.log('Auto-deriving branch from roll number:', derivedBranch);
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          branch: derivedBranch
+          branch: derivedBranch,
         }));
       }
     }
@@ -225,7 +196,6 @@ const SeniorEditProfilePage: React.FC = () => {
 
   // Fetch data on component mount
   useEffect(() => {
-    fetchBranches();
     fetchProfile();
   }, [user]);
 
@@ -233,7 +203,7 @@ const SeniorEditProfilePage: React.FC = () => {
   useEffect(() => {
     if (notification.type) {
       const timer = setTimeout(() => {
-        setNotification({ type: null, message: '' });
+        setNotification({ type: null, message: "" });
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -246,32 +216,42 @@ const SeniorEditProfilePage: React.FC = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate('/');
+    navigate("/");
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    if (confirmed) {
+      setNotification({
+        type: "error",
+        message: "Please contact support to delete your account.",
+      });
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleBranchChange = (value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      branch: value
+      branch: value,
     }));
-    
-    // Filter suggestions based on input
+
     if (value.length > 0) {
-      const filtered = branches.filter(branch =>
+      const filtered = branches.filter((branch) =>
         branch.toLowerCase().includes(value.toLowerCase())
       );
       setBranchSuggestions(filtered);
       setShowBranchSuggestions(true);
       setHighlightedIndex(-1);
     } else {
-      // Show all branches when empty
       setBranchSuggestions(branches);
       setShowBranchSuggestions(true);
       setHighlightedIndex(-1);
@@ -279,14 +259,14 @@ const SeniorEditProfilePage: React.FC = () => {
   };
 
   const handleBranchSelect = (selectedBranch: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      branch: selectedBranch
+      branch: selectedBranch,
     }));
     setShowBranchSuggestions(false);
     setBranchSuggestions([]);
     setHighlightedIndex(-1);
-    
+
     if (branchInputRef.current) {
       branchInputRef.current.focus();
     }
@@ -296,25 +276,28 @@ const SeniorEditProfilePage: React.FC = () => {
     if (!showBranchSuggestions || branchSuggestions.length === 0) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setHighlightedIndex(prev => 
+        setHighlightedIndex((prev) =>
           prev < branchSuggestions.length - 1 ? prev + 1 : 0
         );
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setHighlightedIndex(prev => 
+        setHighlightedIndex((prev) =>
           prev > 0 ? prev - 1 : branchSuggestions.length - 1
         );
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
-        if (highlightedIndex >= 0 && highlightedIndex < branchSuggestions.length) {
+        if (
+          highlightedIndex >= 0 &&
+          highlightedIndex < branchSuggestions.length
+        ) {
           handleBranchSelect(branchSuggestions[highlightedIndex]);
         }
         break;
-      case 'Escape':
+      case "Escape":
         e.preventDefault();
         setShowBranchSuggestions(false);
         setBranchSuggestions([]);
@@ -325,14 +308,13 @@ const SeniorEditProfilePage: React.FC = () => {
 
   const handleBranchFocus = () => {
     if (formData.branch.length > 0) {
-      const filtered = branches.filter(branch =>
+      const filtered = branches.filter((branch) =>
         branch.toLowerCase().includes(formData.branch.toLowerCase())
       );
       setBranchSuggestions(filtered);
       setShowBranchSuggestions(true);
       setHighlightedIndex(-1);
     } else {
-      // Show all branches when empty
       setBranchSuggestions(branches);
       setShowBranchSuggestions(true);
       setHighlightedIndex(-1);
@@ -344,18 +326,17 @@ const SeniorEditProfilePage: React.FC = () => {
     if (relatedTarget && dropdownRef.current?.contains(relatedTarget)) {
       return;
     }
-    
+
     setTimeout(() => {
       setShowBranchSuggestions(false);
       setBranchSuggestions([]);
       setHighlightedIndex(-1);
-      
-      // Auto-select best match or clear if no valid match
+
       if (formData.branch && !branches.includes(formData.branch)) {
         const bestMatch = findBestMatch(formData.branch);
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          branch: bestMatch
+          branch: bestMatch,
         }));
       }
     }, 150);
@@ -363,23 +344,22 @@ const SeniorEditProfilePage: React.FC = () => {
 
   const handleSave = async () => {
     setSaving(true);
-    setNotification({ type: null, message: '' });
+    setNotification({ type: null, message: "" });
 
     try {
       if (!formData.name.trim()) {
         setNotification({
-          type: 'error',
-          message: 'Name is required'
+          type: "error",
+          message: "Name is required",
         });
         setSaving(false);
         return;
       }
 
-      // Strict validation - only allow predefined branches
       if (formData.branch && !branches.includes(formData.branch)) {
         setNotification({
-          type: 'error',
-          message: 'Please select a valid branch from the dropdown list'
+          type: "error",
+          message: "Please select a valid branch from the dropdown list",
         });
         setSaving(false);
         return;
@@ -400,91 +380,84 @@ const SeniorEditProfilePage: React.FC = () => {
         branch: formData.branch.trim(),
       };
 
-      console.log('Saving profile data:', updatedData);
-
-      // Update user metadata in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.updateUser({
-        data: updatedData
-      });
+      const { data: authData, error: authError } =
+        await supabase.auth.updateUser({
+          data: updatedData,
+        });
 
       if (authError) {
-        console.error('Auth update error:', authError);
+        console.error("Auth update error:", authError);
         throw new Error(`Auth update failed: ${authError.message}`);
       }
 
-      console.log('Auth update successful:', authData);
-
-      // Update the user profile in the profiles table
       try {
         const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: user.id,
-            email: user.email,
-            ...updatedData,
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'id'
-          });
+          .from("profiles")
+          .upsert(
+            {
+              id: user.id,
+              email: user.email,
+              ...updatedData,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "id",
+            }
+          );
 
         if (profileError) {
-          console.error('Profile table update failed:', profileError);
-          // Don't throw error here - auth update succeeded, profile table might not exist
-          console.warn('Profile table update failed, but auth update succeeded');
+          console.error("Profile table update failed:", profileError);
+          console.warn(
+            "Profile table update failed, but auth update succeeded"
+          );
         } else {
-          console.log('Profile table updated successfully:', profileData);
-          
-          // Update local profile state only if update succeeded
-          setProfile(prev => ({
+          setProfile((prev) => ({
             ...prev,
             ...updatedData,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           }));
         }
       } catch (profileTableError) {
-        console.error('Profile table error:', profileTableError);
-        // Continue - auth update succeeded
+        console.error("Profile table error:", profileTableError);
       }
 
-      // Refresh user session to get updated data
       try {
         await supabase.auth.refreshSession();
-        console.log('Session refreshed successfully');
+        console.log("Session refreshed successfully");
       } catch (refreshError) {
-        console.warn('Session refresh failed:', refreshError);
-        // Don't fail the whole operation for this
+        console.warn("Session refresh failed:", refreshError);
       }
 
       setNotification({
-        type: 'success',
-        message: 'Profile updated successfully! Redirecting...'
+        type: "success",
+        message: "Profile updated successfully! Redirecting...",
       });
 
       setTimeout(() => {
-        navigate('/senior-profile');
+        navigate("/senior-profile");
       }, 2000);
-
     } catch (error: any) {
-      console.error('Error saving profile:', error);
-      
-      // More specific error messages
-      let errorMessage = 'Failed to update profile. Please try again.';
-      
+      console.error("Error saving profile:", error);
+
+      let errorMessage = "Failed to update profile. Please try again.";
+
       if (error.message) {
-        if (error.message.includes('Auth update failed')) {
-          errorMessage = 'Failed to update user authentication data. Please try again.';
-        } else if (error.message.includes('No user found')) {
-          errorMessage = 'User session expired. Please sign in again.';
-        } else if (error.message.includes('branch')) {
-          errorMessage = 'Invalid branch selected. Please choose from the dropdown.';
+        if (error.message.includes("Auth update failed")) {
+          errorMessage =
+            "Failed to update user authentication data. Please try again.";
+        } else if (error.message.includes("No user found")) {
+          errorMessage = "User session expired. Please sign in again.";
+        } else if (error.message.includes("branch")) {
+          errorMessage =
+            "Invalid branch selected. Please choose from the dropdown.";
         } else {
           errorMessage = `Update failed: ${error.message}`;
         }
       }
-      
+
       setNotification({
-        type: 'error',
-        message: errorMessage
+        type: "error",
+        message: errorMessage,
       });
     } finally {
       setSaving(false);
@@ -497,8 +470,13 @@ const SeniorEditProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
         <Card className="p-8">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Please Sign In</h1>
-          <Button onClick={() => navigate('/login')} className="bg-blue-600 hover:bg-blue-700">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            Please Sign In
+          </h1>
+          <Button
+            onClick={() => navigate("/login")}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
             Go to Login
           </Button>
         </Card>
@@ -506,8 +484,7 @@ const SeniorEditProfilePage: React.FC = () => {
     );
   }
 
-  // Show loading state while fetching profile data
-  if (profileLoading || branchLoading) {
+  if (profileLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
         <Card className="p-8">
@@ -521,93 +498,64 @@ const SeniorEditProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      
-      {/* Custom Navbar */}
-      <nav className="bg-white shadow-sm border-b border-gray-200 fixed w-full top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer" onClick={() => navigate('/senior-home')}>
-              Campus Connect
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Header */}
+      <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link to="/senior-profile">
+              <Button
+                variant="ghost"
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all duration-200 font-medium"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Profile
+              </Button>
+            </Link>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-green-500 rounded-xl flex items-center justify-center shadow-lg">
+                <User className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                  Edit Profile & Settings
+                </h1>
+                <p className="text-sm text-gray-500">
+                  Update your profile and manage account
+                </p>
+              </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="flex items-center gap-2 hover:bg-gray-100 transition-colors"
-                  >
-                    <UserCheck className="h-5 w-5 text-blue-600" />
-                    <span className="text-gray-700 font-medium">Senior</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium text-gray-900">{formData.name}</p>
-                    <p className="text-xs text-gray-500">{formData.email}</p>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/senior-profile')}>
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/senior-settings')}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="flex items-center space-x-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-200">
+              <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-emerald-700">
+                Active
+              </span>
             </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      <main className="pt-20 pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">Edit Profile</h1>
-            
-            {notification.type && (
-              <div className={`mt-4 p-4 rounded-lg border ${
-                notification.type === 'success' 
-                  ? 'bg-green-50 border-green-200 text-green-800' 
-                  : 'bg-red-50 border-red-200 text-red-800'
-              }`}>
-                <div className="flex items-center gap-2">
-                  {notification.type === 'success' ? (
-                    <CheckCircle className="h-5 w-5" />
-                  ) : (
-                    <AlertTriangle className="h-5 w-5" />
-                  )}
-                  <span className="font-medium">{notification.message}</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-blue-600" />
-                  Personal Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+      <main className="flex-1 py-8">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          {/* Edit Profile */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5 text-blue-600" />
+                Edit Senior Profile
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name">Full Name *</Label>
                     <Input
                       id="name"
                       value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("name", e.target.value)
+                      }
                       placeholder="Enter your full name"
                       required
                     />
@@ -618,28 +566,38 @@ const SeniorEditProfilePage: React.FC = () => {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
                       placeholder="Enter your email"
                       disabled
                       className="bg-gray-50"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Email cannot be changed
+                    </p>
                   </div>
                 </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("phone", e.target.value)
+                      }
                       placeholder="Enter your phone number"
                     />
                   </div>
                   <div>
                     <Label htmlFor="gender">Gender</Label>
-                    <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+                    <Select
+                      value={formData.gender}
+                      onValueChange={(value) =>
+                        handleInputChange("gender", value)
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
@@ -647,29 +605,22 @@ const SeniorEditProfilePage: React.FC = () => {
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
-                        <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                        <SelectItem value="prefer-not-to-say">
+                          Prefer not to say
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5 text-purple-600" />
-                  Academic Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="rollNo">Roll Number</Label>
                     <Input
                       id="rollNo"
                       value={formData.rollNo}
-                      onChange={(e) => handleInputChange('rollNo', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("rollNo", e.target.value)
+                      }
                       placeholder="Enter your roll number"
                     />
                   </div>
@@ -686,15 +637,15 @@ const SeniorEditProfilePage: React.FC = () => {
                         onBlur={handleBranchBlur}
                         placeholder="Search and select your branch..."
                         className={`pr-10 ${
-                          isValidBranch && formData.branch 
-                            ? 'border-green-300 bg-green-50' 
+                          isValidBranch && formData.branch
+                            ? "border-green-300 bg-green-50"
                             : formData.branch && !isValidBranch
-                            ? 'border-red-300 bg-red-50'
-                            : ''
+                            ? "border-red-300 bg-red-50"
+                            : ""
                         }`}
                         autoComplete="off"
                       />
-                      
+
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
                         {isValidBranch && formData.branch && (
                           <Check className="h-4 w-4 text-green-600" />
@@ -702,22 +653,21 @@ const SeniorEditProfilePage: React.FC = () => {
                         <ChevronDown className="h-4 w-4 text-gray-400" />
                       </div>
                     </div>
-                    
+
                     {formData.branch && (
-                      <p className={`text-xs mt-1 ${
-                        isValidBranch 
-                          ? 'text-green-600' 
-                          : 'text-red-600'
-                      }`}>
-                        {isValidBranch 
-                          ? `✓ Selected: ${formData.branch}` 
-                          : `❌ Invalid branch. Please select from the dropdown.`
-                        }
+                      <p
+                        className={`text-xs mt-1 ${
+                          isValidBranch ? "text-green-600" : "text-red-600"
+                        }`}
+                      >
+                        {isValidBranch
+                          ? `✓ Selected: ${formData.branch}`
+                          : `❌ Invalid branch. Please select from the dropdown.`}
                       </p>
                     )}
-                    
+
                     {showBranchSuggestions && branchSuggestions.length > 0 && (
-                      <div 
+                      <div
                         ref={dropdownRef}
                         className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
                       >
@@ -725,11 +675,11 @@ const SeniorEditProfilePage: React.FC = () => {
                           <div
                             key={index}
                             className={`px-4 py-2 text-sm cursor-pointer border-b border-gray-100 last:border-b-0 flex items-center justify-between ${
-                              index === highlightedIndex 
-                                ? 'bg-blue-100 text-blue-700' 
-                                : formData.branch === suggestion 
-                                ? 'bg-blue-50 text-blue-700' 
-                                : 'hover:bg-blue-50 hover:text-blue-700'
+                              index === highlightedIndex
+                                ? "bg-blue-100 text-blue-700"
+                                : formData.branch === suggestion
+                                ? "bg-blue-50 text-blue-700"
+                                : "hover:bg-blue-50 hover:text-blue-700"
                             }`}
                             onMouseDown={(e) => {
                               e.preventDefault();
@@ -738,72 +688,147 @@ const SeniorEditProfilePage: React.FC = () => {
                             onMouseEnter={() => setHighlightedIndex(index)}
                           >
                             <span>{suggestion}</span>
-                            {(formData.branch === suggestion || index === highlightedIndex) && (
+                            {(formData.branch === suggestion ||
+                              index === highlightedIndex) && (
                               <Check className="h-4 w-4 text-blue-600" />
                             )}
                           </div>
                         ))}
                       </div>
                     )}
-                    
-                    {showBranchSuggestions && branchSuggestions.length === 0 && formData.branch.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-4 text-sm text-gray-500 text-center">
-                        No branches found matching "{formData.branch}"
-                      </div>
-                    )}
+
+                    {showBranchSuggestions &&
+                      branchSuggestions.length === 0 &&
+                      formData.branch.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-4 text-sm text-gray-500 text-center">
+                          No branches found matching "{formData.branch}"
+                        </div>
+                      )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-green-600" />
-                  Location Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
                 <div>
                   <Label htmlFor="city">City</Label>
                   <Input
                     id="city"
                     value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    onChange={(e) => handleInputChange("city", e.target.value)}
                     placeholder="Enter your city"
                   />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="flex justify-end gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/senior-profile")}
+                  disabled={saving}
+                  className="px-6 py-2 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={saving || (formData.branch && !isValidBranch)}
+                  className="px-8 py-2 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving Changes...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </div>
+              {notification.type && (
+                <div
+                  className={`mt-4 p-4 rounded-lg border ${
+                    notification.type === "success"
+                      ? "bg-green-50 border-green-200 text-green-800"
+                      : "bg-red-50 border-red-200 text-red-800"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {notification.type === "success" ? (
+                      <CheckCircle className="h-5 w-5" />
+                    ) : (
+                      <AlertTriangle className="h-5 w-5" />
+                    )}
+                    <span className="font-medium">{notification.message}</span>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-            <div className="flex justify-end gap-4">
-              <Button
-                variant="outline"
-                onClick={() => navigate('/senior-profile')}
-                disabled={saving}
-                className="px-6 py-2 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={saving || (formData.branch && !isValidBranch)}
-                className="px-8 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving Changes...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+          {/* Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-blue-600" />
+                Profile & App Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium">
+                    Profile Visibility
+                  </label>
+                  <p className="text-xs text-gray-500">
+                    Make your profile visible to juniors
+                  </p>
+                </div>
+                <Switch
+                  checked={profileVisibility}
+                  onCheckedChange={setProfileVisibility}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Account Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-green-600" />
+                Account Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Button variant="outline" className="w-full justify-start">
+                  <Key className="h-4 w-4 mr-2" />
+                  Change Password
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <Mail className="h-4 w-4 mr-2" />
+                  Update Email
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                <Button
+                  onClick={handleSignOut}
+                  variant="outline"
+                  className="w-full border-orange-200 text-orange-700 hover:bg-orange-100 hover:text-orange-900 transition-colors"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+                <Button
+                  onClick={handleDeleteAccount}
+                  variant="outline"
+                  className="w-full border-red-200 text-red-700 hover:bg-red-100 hover:text-red-900 transition-colors"
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Delete Account
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
 

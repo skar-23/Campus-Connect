@@ -3,7 +3,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, Lock, User, GraduationCap, Eye, EyeOff, Check, X, Phone, MapPin, IdCard } from "lucide-react";
+import { User, GraduationCap, Mail, Lock, Eye, EyeOff, Check, X, Phone, MapPin, IdCard } from "lucide-react";
 
 type UserRole = "junior" | "senior";
 
@@ -104,6 +104,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get mode from query param
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const mode = params.get("mode");
+    if (mode === "junior" || mode === "senior") {
+      setActiveRole(mode);
+    }
+  }, [location.search]);
 
   // Get the appropriate schema based on mode and role
   const getSchema = () => {

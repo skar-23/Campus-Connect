@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { MessageCircle, Users, BookOpen } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const JuniorHero: React.FC = () => {
   return (
@@ -20,24 +20,14 @@ const JuniorHero: React.FC = () => {
             <p className="text-lg md:text-xl text-gray-600 max-w-xl mx-auto md:mx-0 leading-relaxed">
               Connect with experienced seniors, get your documents verified, and navigate your admission process with confidence. Your journey starts here!
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link to="/chat">
+            <div className="flex justify-center md:justify-start pt-4">
+              <Link to="/connect">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-8 py-3 rounded-full transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-8 py-3 rounded-full transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
                 >
-                  <MessageCircle className="mr-2 h-5 w-5" />
-                  Chat with Seniors
-                </Button>
-              </Link>
-              <Link to="/seniors">
-                <Button 
-                  variant="outline"
-                  size="lg" 
-                  className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 font-semibold px-8 py-3 rounded-full transform hover:scale-105 transition-all duration-300"
-                >
-                  <Users className="mr-2 h-5 w-5" />
-                  Find Seniors
+                  Get Started
+                  <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </Link>
             </div>

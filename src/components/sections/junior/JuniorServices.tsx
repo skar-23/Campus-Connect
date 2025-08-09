@@ -15,7 +15,7 @@ const JuniorServices: React.FC = () => {
       title: "Admission Guidance",
       description: "Step-by-step guidance through the entire admission process from seniors who understand the challenges.",
       image: "https://placehold.co/600x400/A1B5D6/4A3F35?text=Admission+Guidance",
-      features: ["Personal mentorship", "Process clarity", "Doubt resolution"],
+      features: ["Hostel Allotment process", "Fee Payments Guidence", "Doubt resolution"],
       icon: Clock
     },
     {

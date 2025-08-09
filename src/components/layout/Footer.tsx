@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Sparkles,
+  GraduationCap,
   Star,
   AtSign,
   Heart,
@@ -18,9 +18,15 @@ import {
 import { useUserNavigation } from "@/hooks/useUserNavigation";
 
 const Footer: React.FC = () => {
-  const [email, setEmail] = useState("");
-  // This logic is the key to fixing the problem
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [submitted, setSubmitted] = useState(false);
   const { navigateToHome, isLoggedIn, isSenior } = useUserNavigation();
+  const navigate = useNavigate();
 
   const handleCampusConnectClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,8 +38,6 @@ const Footer: React.FC = () => {
     return isSenior ? "/senior-home" : "/junior-home";
   };
 
-  // --- THIS IS THE FIX ---
-  // These functions now correctly check if the user is a senior
   const getFAQLink = () => {
     return isSenior ? "/senior-faq" : "/junior-faq";
   };
@@ -41,13 +45,22 @@ const Footer: React.FC = () => {
   const getTermsLink = () => {
     return isSenior ? "/senior-terms" : "/junior-terms";
   };
-  // --- END OF FIX ---
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleContactChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setContactForm({
+      ...contactForm,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Subscribing email:", email);
-    setEmail("");
-    // Add your subscription logic here
+    setSubmitted(true);
+    setContactForm({ name: "", email: "", message: "" });
+    setTimeout(() => setSubmitted(false), 3000);
+    setShowContactForm(false);
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -60,21 +73,35 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 gap-y-12 items-start">
           {/* Left Column - Logo and Description */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-1">
-              <Sparkles className="h-6 w-6 text-pink-500" />
-              <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-                  Campus Connect
-                </h3>
-                <p className="text-xs text-gray-600 -mt-1">where stories begin</p>
+          <div className="space-y-4 h-full">
+            <div
+              className="flex items-center space-x-3 cursor-pointer group"
+              onClick={handleCampusConnectClick}
+            >
+              <div className="relative">
+                <GraduationCap className="h-9 w-9 text-pink-500 group-hover:text-pink-600 transition-all duration-300 transform -rotate-12 group-hover:-rotate-6 group-hover:scale-110" />
               </div>
-              <Sparkles className="h-4 w-4 text-purple-500" />
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-black tracking-tight">
+                  <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 bg-clip-text text-transparent group-hover:from-pink-600 group-hover:via-purple-600 group-hover:to-indigo-700 transition-all duration-300">
+                    C
+                  </span>
+                  <span className="text-gray-800 group-hover:text-gray-900 transition-colors duration-300 font-bold">
+                    ampus
+                  </span>{" "}
+                  <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-pink-600 transition-all duration-300">
+                    Connect
+                  </span>
+                </h1>
+                <p className="text-xs text-gray-500 -mt-1 group-hover:text-gray-600 transition-colors duration-300 font-medium tracking-wide">
+                  where stories begin ✨
+                </p>
+              </div>
             </div>
             <p className="text-gray-600 text-sm leading-relaxed">
-              Bridging the gap between juniors and seniors, creating meaningful connections 
+              Bridging the gap between juniors and seniors, creating meaningful connections
               that last beyond college years. Your journey of friendship starts here.
             </p>
             <div className="flex space-x-3">
@@ -110,7 +137,7 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Middle Left Column - Quick Links */}
-          <div className="space-y-4">
+          <div className="space-y-4 h-full">
             <div className="flex items-center space-x-2">
               <Star className="h-5 w-5 text-yellow-500" />
               <h4 className="text-lg font-semibold text-gray-800">Quick Links</h4>
@@ -125,108 +152,147 @@ const Footer: React.FC = () => {
                 </button>
               </li>
               <li>
-                <button
-                  onClick={() => scrollToSection("verification")}
+                <Link
+                  to="/about-idea"
                   className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
                 >
-                  How It Works
+                  Idea Behind Website
+                </Link>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollToSection("admissions-update")}
+                  className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
+                >
+                  Admission Updates
                 </button>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/privacy-policy"
                   className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
                 >
                   Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
-                >
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
-                >
-                  Help Center
-                </a>
+                </Link>
               </li>
               <li>
                 <button
-                  onClick={() => scrollToSection("contact")}
+                  onClick={() => scrollToSection("cta")}
                   className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
                 >
-                  Contact Support
+                  Join Us
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Middle Right Column - Contact Info */}
-          <div className="space-y-4">
+          {/* Merged Contact Us/Message Us */}
+          <div className="space-y-4 h-full">
             <div className="flex items-center space-x-2">
               <AtSign className="h-5 w-5 text-purple-500" />
+              <Heart className="h-5 w-5 text-red-500" />
               <h4 className="text-lg font-semibold text-gray-800">Contact Us</h4>
             </div>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-gray-500" />
                 <a
-                  href="mailto:hello@campusconnect.com"
+                  href="mailto:stdntpartner@gmail.com"
                   className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
                 >
-                  hello@campusconnect.com
+                  stdntpartner@gmail.com
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-gray-500" />
                 <a
-                  href="tel:+12345678900"
+                  href="tel:+918500913952"
                   className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
                 >
-                  +1 (234) 567-890
+                  8500913952
+                </a>
+                <span className="text-gray-400">|</span>
+                <a
+                  href="tel:+916305838414"
+                  className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
+                >
+                  6305838414
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600 text-sm">Campus Connect HQ</span>
+                <span className="text-gray-600 text-sm">
+                  Dr B R Ambedkar National Institute of Technology Jalandhar, Punjab, India
+                </span>
               </div>
             </div>
+            <p className="text-gray-600 text-sm">
+              Have a question or suggestion? Reach out to us directly!
+            </p>
+            <Button
+              className="w-full bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-purple-700 font-semibold py-2 rounded-lg transition-all duration-200 shadow-none"
+              onClick={() => navigate("/contact-form")}
+              type="button"
+            >
+              Open Contact Form
+            </Button>
+            {/* Contact form removed, only button remains */}
+            {submitted && (
+              <p className="text-xs text-green-500">Thank you for contacting us!</p>
+            )}
           </div>
 
-          {/* Right Column - Newsletter */}
-          <div className="space-y-4">
+          {/* NITJ Admissions Updates */}
+          <div className="space-y-4 h-full">
             <div className="flex items-center space-x-2">
-              <Heart className="h-5 w-5 text-red-500" />
-              <h4 className="text-lg font-semibold text-gray-800">Stay Connected</h4>
+              <Star className="h-5 w-5 text-purple-500" />
+              <h4 className="text-lg font-semibold text-gray-800">NITJ Admissions Updates</h4>
             </div>
             <p className="text-gray-600 text-sm">
-              Subscribe to get the latest updates and exclusive content delivered to your inbox.
+              Stay up to date with the latest NITJ B.Tech admissions news, important dates, and official documents.
             </p>
-            <form onSubmit={handleSubscribe} className="space-y-3">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-white border-gray-200 focus:border-pink-500 focus:ring-pink-500"
-                required
-              />
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-2 rounded-lg transition-all duration-300"
-              >
-                Subscribe
-              </Button>
-            </form>
-            <p className="text-xs text-gray-500">
-              No spam, just pure magic and updates! ✨
-            </p>
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="https://www.nitj.ac.in/admissions/index.html#btech"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-700 underline hover:text-purple-700 text-sm"
+                >
+                  NITJ Official Admissions Page
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.nitj.ac.in/nitj_files/links/BTech_Admission_Brochure_2025.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-700 underline hover:text-purple-700 text-sm"
+                >
+                  B.Tech Admission Brochure 2025
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.nitj.ac.in/nitj_files/links/Fee_Structure_2025.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-700 underline hover:text-purple-700 text-sm"
+                >
+                  Fee Structure 2025
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.nitj.ac.in/nitj_files/links/Important_Dates_2025.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-700 underline hover:text-purple-700 text-sm"
+                >
+                  Important Dates 2025
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -245,5 +311,5 @@ const Footer: React.FC = () => {
     </footer>
   );
 };
-
 export default Footer;
+

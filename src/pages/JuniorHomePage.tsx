@@ -11,9 +11,11 @@ import JuniorBenefits from "@/components/sections/junior/JuniorBenefits";
 import JuniorFAQ from "@/components/sections/junior/JuniorFAQ";
 import ChaiThanks from "@/components/sections/ChaiThanks";
 import { BookOpen, Users, HelpCircle } from "lucide-react";
+import { useLoading } from "@/context/LoadingContext";
 
 const JuniorHomePage: React.FC = () => {
   const [isVisible, setIsVisible] = useState<{ [key: string]: boolean }>({});
+  const { setLoading } = useLoading();
 
   // Intersection Observer for animations
   useEffect(() => {
@@ -39,6 +41,12 @@ const JuniorHomePage: React.FC = () => {
 
     return () => observer.disconnect();
   }, []);
+
+  const handleAction = async () => {
+    setLoading(true);
+    // await doSomethingAsync();
+    setLoading(false);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
@@ -124,6 +132,7 @@ const JuniorHomePage: React.FC = () => {
       <Footer />
 
       {/* Floating Action Buttons */}
+      {/* 
       <div className="fixed bottom-6 right-6 flex flex-col gap-4 z-40">
         <Link to="/connect">
           <Button
@@ -153,6 +162,7 @@ const JuniorHomePage: React.FC = () => {
           </Button>
         </Link>
       </div>
+      */}
     </div>
   );
 };

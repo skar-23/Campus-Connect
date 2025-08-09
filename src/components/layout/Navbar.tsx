@@ -34,8 +34,8 @@ const Navbar: React.FC<NavbarProps> = ({ onLoginClick }) => {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
         isScrolled
-          ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100"
-          : "bg-white/90 backdrop-blur-sm shadow-sm"
+          ? "bg-white backdrop-blur-md shadow-lg border-b border-gray-100"
+          : "bg-white backdrop-blur-sm shadow-sm"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,24 +75,25 @@ const Navbar: React.FC<NavbarProps> = ({ onLoginClick }) => {
                 <span className="absolute bottom-1 left-1/2 w-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-600 group-hover:w-6 group-hover:left-1/2 group-hover:-translate-x-1/2 transition-all duration-300 rounded-full"></span>
               </button>
               <button
+                onClick={() => scrollToSection("admissions-update")}
+                className="relative px-4 py-2 text-gray-700 hover:text-pink-600 transition-all duration-300 font-medium rounded-lg hover:bg-pink-50/80 group focus:outline-none"
+              >
+                Addmission Updates
+                <span className="absolute bottom-1 left-1/2 w-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-600 group-hover:w-6 group-hover:left-1/2 group-hover:-translate-x-1/2 transition-all duration-300 rounded-full"></span>
+              </button>
+              <button
                 onClick={() => scrollToSection("about")}
                 className="relative px-4 py-2 text-gray-700 hover:text-pink-600 transition-all duration-300 font-medium rounded-lg hover:bg-pink-50/80 group focus:outline-none"
               >
                 About Us
                 <span className="absolute bottom-1 left-1/2 w-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-600 group-hover:w-6 group-hover:left-1/2 group-hover:-translate-x-1/2 transition-all duration-300 rounded-full"></span>
               </button>
+              
               <button
-                onClick={() => scrollToSection("verification")}
+                onClick={() => scrollToSection("cta")}
                 className="relative px-4 py-2 text-gray-700 hover:text-pink-600 transition-all duration-300 font-medium rounded-lg hover:bg-pink-50/80 group focus:outline-none"
               >
-                How It Works
-                <span className="absolute bottom-1 left-1/2 w-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-600 group-hover:w-6 group-hover:left-1/2 group-hover:-translate-x-1/2 transition-all duration-300 rounded-full"></span>
-              </button>
-              <button
-                onClick={() => scrollToSection("contact")}
-                className="relative px-4 py-2 text-gray-700 hover:text-pink-600 transition-all duration-300 font-medium rounded-lg hover:bg-pink-50/80 group focus:outline-none"
-              >
-                Contact
+                Join Us
                 <span className="absolute bottom-1 left-1/2 w-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-600 group-hover:w-6 group-hover:left-1/2 group-hover:-translate-x-1/2 transition-all duration-300 rounded-full"></span>
               </button>
             </div>

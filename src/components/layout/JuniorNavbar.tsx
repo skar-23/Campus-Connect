@@ -10,7 +10,8 @@ import {
   User,
   LogOut,
   Menu,
-  X
+  X,
+  Settings as SettingsIcon
 } from "lucide-react";
 
 const JuniorNavbar: React.FC = () => {
@@ -130,7 +131,7 @@ const JuniorNavbar: React.FC = () => {
                 onClick={() => scrollToSection("junior-hero")}
                 className="relative text-gray-700 hover:text-pink-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-pink-50/80 group"
               >
-                🏠 Home
+                Home
                 <span className="absolute bottom-0 left-3 w-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-600 group-hover:w-6 transition-all duration-300"></span>
               </button>
               
@@ -138,7 +139,7 @@ const JuniorNavbar: React.FC = () => {
                 onClick={() => scrollToSection("services")}
                 className="relative text-gray-700 hover:text-pink-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-pink-50/80 group"
               >
-                🛠️ Services
+                Services
                 <span className="absolute bottom-0 left-3 w-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-600 group-hover:w-6 transition-all duration-300"></span>
               </button>
               
@@ -146,7 +147,7 @@ const JuniorNavbar: React.FC = () => {
                 onClick={() => scrollToSection("benefits")}
                 className="relative text-gray-700 hover:text-pink-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-pink-50/80 group"
               >
-                🔥 Benefits
+                Benefits
                 <span className="absolute bottom-0 left-3 w-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-600 group-hover:w-6 transition-all duration-300"></span>
               </button>
               
@@ -154,7 +155,7 @@ const JuniorNavbar: React.FC = () => {
                 onClick={() => scrollToSection("faq")}
                 className="relative text-gray-700 hover:text-pink-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-pink-50/80 group"
               >
-                ❓ FAQ
+                FAQ
                 <span className="absolute bottom-0 left-3 w-0 h-0.5 bg-gradient-to-r from-pink-500 to-purple-600 group-hover:w-6 transition-all duration-300"></span>
               </button>
             </div>
@@ -176,33 +177,35 @@ const JuniorNavbar: React.FC = () => {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-full transition-all duration-300 hover:bg-purple-50/80"
+                  className="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-full transition-all duration-300 hover:bg-purple-50/80 flex items-center"
                 >
                   <User className="mr-2 h-4 w-4" />
                   {user?.name || "Profile"}
                 </Button>
                 
-                {/* Dropdown Menu */}
-                <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-lg shadow-xl border border-gray-200/30 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                {/* Profile Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-52 bg-white/95 backdrop-blur-md rounded-xl shadow-xl border border-gray-200/30 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                   <div className="py-2">
-                    <Link to="/junior-profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50/80 hover:text-purple-600 transition-colors duration-200">
-                      <User className="inline mr-2 h-4 w-4" />
+                    <Link
+                      to="/junior-profile"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50/80 hover:text-purple-600 transition-colors duration-200"
+                    >
+                      <User className="mr-2 h-4 w-4" />
                       My Profile
                     </Link>
-                    <Link to="/resources" className="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50/80 hover:text-purple-600 transition-colors duration-200">
-                      <BookOpen className="inline mr-2 h-4 w-4" />
-                      Resources
-                    </Link>
-                    <Link to="/help" className="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50/80 hover:text-purple-600 transition-colors duration-200">
-                      <HelpCircle className="inline mr-2 h-4 w-4" />
-                      Help & Support
+                    <Link
+                      to="/junior/edit"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50/80 hover:text-purple-600 transition-colors duration-200"
+                    >
+                      <SettingsIcon className="mr-2 h-4 w-4" />
+                      Settings
                     </Link>
                     <hr className="my-1 border-gray-200" />
                     <button
                       onClick={handleSignOut}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50/80 transition-colors duration-200"
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50/80 transition-colors duration-200"
                     >
-                      <LogOut className="inline mr-2 h-4 w-4" />
+                      <LogOut className="mr-2 h-4 w-4" />
                       Sign Out
                     </button>
                   </div>
@@ -239,28 +242,28 @@ const JuniorNavbar: React.FC = () => {
                 onClick={() => scrollToSection("junior-hero")}
                 className="block w-full text-left px-4 py-3 text-gray-700 hover:text-pink-600 hover:bg-pink-50/80 rounded-lg font-medium transition-all duration-200"
               >
-                🏠 Home
+                Home
               </button>
               
               <button
                 onClick={() => scrollToSection("services")}
                 className="block w-full text-left px-4 py-3 text-gray-700 hover:text-pink-600 hover:bg-pink-50/80 rounded-lg font-medium transition-all duration-200"
               >
-                🛠️ Services
+                Services
               </button>
               
               <button
                 onClick={() => scrollToSection("benefits")}
                 className="block w-full text-left px-4 py-3 text-gray-700 hover:text-pink-600 hover:bg-pink-50/80 rounded-lg font-medium transition-all duration-200"
               >
-                🔥 Benefits
+                Benefits
               </button>
               
               <button
                 onClick={() => scrollToSection("faq")}
                 className="block w-full text-left px-4 py-3 text-gray-700 hover:text-pink-600 hover:bg-pink-50/80 rounded-lg font-medium transition-all duration-200"
               >
-                ❓ FAQ
+                FAQ
               </button>
 
               <hr className="my-2 border-gray-200/50" />

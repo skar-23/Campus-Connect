@@ -10,16 +10,17 @@ const ChaiThanks: React.FC = () => {
         </div>
         
         <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
-          Say Thanks with Chai! (It's Not Weird, We Promise)
+          Say Thanks with Chai!
+          It's Not Weird, We Promise
         </h2>
         
         <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
-          This isn't some cold, corporate thing. When a senior helps you out, you can buy them a virtual chai as a thank you! It's our way of keeping the good vibes flowing and showing appreciation for those awesome seniors who take time out of their busy schedules to help.
+          In college, seniors are more than classmates ahead of you—they can be guides, supporters, and friends. When they help you, show your gratitude with a chai or snack at the campus café. It’s not about money, but about sharing moments. Let’s spread the message: seniors can be mentors and family, and happiness comes from kindness, not just money.
         </p>
         
         <div className="mt-12 flex items-center justify-center space-x-4">
           <Heart className="h-6 w-6 text-red-500 animate-pulse" />
-          <span className="text-gray-600 font-medium">Spread the love, one chai at a time</span>
+          <span className="text-gray-600 font-medium">Spread the love, with a simple chai</span>
           <Heart className="h-6 w-6 text-red-500 animate-pulse" />
         </div>
       </div>

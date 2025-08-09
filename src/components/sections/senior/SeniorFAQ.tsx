@@ -7,37 +7,45 @@ const SeniorFAQ: React.FC = () => {
 
   const faqs = [
     {
-      question: "How much time do I need to commit as a mentor?",
-      answer: "The time commitment is flexible and entirely up to you! Most mentors spend 2-4 hours per week helping juniors. You can set your availability and choose how many students you want to mentor based on your schedule."
+      question: "How do I ensure my safety and privacy while mentoring?",
+      answer:
+        "Your privacy and safety are our top priorities. Do not share personal contact details unless you are comfortable. Use the platform's messaging system for all communications, and report any inappropriate behavior immediately to the support team.",
     },
     {
-      question: "What kind of support do I provide as a senior mentor?",
-      answer: "As a mentor, you can help with document verification, admission guidance, campus navigation, study tips, career advice, and general college life questions. You choose the areas where you feel most confident helping."
+      question: "Can I choose which juniors to mentor?",
+      answer:
+        "Yes, you can review requests and accept only those you feel comfortable with. You are never obligated to mentor anyone you do not wish to.",
     },
     {
-      question: "Do I get any recognition for my mentoring work?",
-      answer: "Absolutely! We have a recognition system with badges, certificates, and public acknowledgment. Top mentors are featured on our platform and receive special recognition from the college administration."
+      question: "What if a junior asks for help outside my expertise?",
+      answer:
+        "You can politely let them know your areas of expertise. If needed, you can refer them to another mentor or direct them to the appropriate resources.",
     },
     {
-      question: "How are juniors matched with me?",
-      answer: "Juniors can browse mentor profiles and choose based on department, specialization, or interests. They can also be automatically matched based on their needs and your expertise areas."
+      question: "How do I handle inappropriate or uncomfortable requests?",
+      answer:
+        "If you receive any inappropriate or uncomfortable requests, please report them immediately using the platform's reporting tools. Our team will take swift action to ensure your safety.",
     },
     {
-      question: "Can I set boundaries on what help I provide?",
-      answer: "Yes! You can specify your areas of expertise and availability in your profile. You're not obligated to help with everything - focus on areas where you can provide the most value."
+      question: "Is my personal information visible to juniors?",
+      answer:
+        "Only the information you choose to share in your mentor profile is visible. Your email, phone number, and other sensitive details remain private unless you decide to share them.",
     },
     {
-      question: "What if I need to take a break from mentoring?",
-      answer: "You can pause your mentoring anytime by updating your availability status. We understand that academics and other commitments come first. You can resume whenever you're ready."
+      question: "Can I take a break or stop mentoring at any time?",
+      answer:
+        "Absolutely. You can update your availability status or pause mentoring whenever you need to. Your well-being and academic priorities come first.",
     },
     {
-      question: "How do I handle difficult or inappropriate requests?",
-      answer: "We have clear guidelines and a reporting system. If you encounter any inappropriate behavior or requests outside your comfort zone, you can report them to our support team immediately."
+      question: "How do I get support if I face any issues?",
+      answer:
+        "You can reach out to the support team via the help section on the platform. We are here to assist you with any concerns or questions.",
     },
     {
-      question: "Will mentoring help with my own career development?",
-      answer: "Definitely! Mentoring develops leadership skills, communication abilities, and teaching experience - all valuable for your resume and future career. Many companies value mentoring experience highly."
-    }
+      question: "Will mentoring affect my academics?",
+      answer:
+        "Mentoring is designed to be flexible. You can set your own schedule and limit the number of juniors you mentor, ensuring it does not interfere with your studies.",
+    },
   ];
 
   return (
@@ -51,7 +59,7 @@ const SeniorFAQ: React.FC = () => {
             Senior Mentor FAQ
           </h2>
           <p className="text-lg text-gray-600">
-            Common questions about being a mentor and helping junior students
+            Genuine questions about mentoring and your safety as a senior
           </p>
         </div>
 
@@ -83,26 +91,6 @@ const SeniorFAQ: React.FC = () => {
               )}
             </Card>
           ))}
-        </div>
-
-        {/* Additional Help Section */}
-        <div className="mt-12 text-center">
-          <Card className="bg-gradient-to-r from-blue-500 to-green-600 text-white border-0">
-            <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-4">Still Have Questions?</h3>
-              <p className="text-blue-100 mb-6">
-                Our support team is here to help you make the most of your mentoring experience.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3 rounded-full transition-all duration-300 transform hover:scale-105">
-                  Contact Support
-                </button>
-                <button className="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold px-8 py-3 rounded-full transition-all duration-300 transform hover:scale-105">
-                  Mentor Guidelines
-                </button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </section>
