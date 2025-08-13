@@ -1,47 +1,36 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, User, Mail, Phone, MapPin, AlertCircle, Settings, GraduationCap, HelpCircle, ArrowLeft, MessageCircle, Flag } from "lucide-react";
+import { useSeniorProfile } from "@/hooks/useSeniorProfile";
+import {
+  Loader2,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  AlertCircle,
+  Settings,
+  GraduationCap,
+  HelpCircle,
+  ArrowLeft,
+  MessageCircle,
+  Flag,
+  Camera,
+} from "lucide-react";
+import SeniorAvatarSelector from "@/components/profile/SeniorAvatarSelector";
+import { useSeniorAvatar } from "@/hooks/useSeniorAvatar";
+import { detectGenderFromName } from "@/utils/avatarUtils";
 
 const SeniorProfilePage: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [profileVisibility, setProfileVisibility] = useState(true);
-
-  // Fetch user profile from database
-  const fetchProfile = async () => {
-    if (!user) return;
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error);
-        return;
-      }
-      setProfile(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [user]);
+  const { profile: profileData, loading, error } = useSeniorProfile();
+  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+  
+  // Always call the avatar hook, even if profile data isn't loaded yet
+  const { avatarUrl, isLoading: avatarLoading, updateAvatar } = useSeniorAvatar(profileData);
 
   // Function to get branch from roll number (fallback only)
   const getBranchFromRollNo = (rollNo: string): string => {
@@ -96,29 +85,18 @@ const SeniorProfilePage: React.FC = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-        <nav className="bg-white shadow-sm border-b border-gray-200 fixed w-full top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="text-2xl font-bold text-blue-600">
-                Campus Connect
-              </div>
-              <Button 
-                onClick={() => navigate('/login')} 
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Sign In
-              </Button>
-            </div>
-          </div>
-        </nav>
         <div className="pt-20 pb-12">
           <div className="max-w-2xl mx-auto px-4 text-center">
             <Card className="p-8">
               <AlertCircle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-gray-800 mb-4">Please Sign In</h1>
-              <p className="text-gray-600 mb-6">You need to sign in to view your profile.</p>
-              <Button 
-                onClick={() => window.location.href = '/login'} 
+              <h1 className="text-2xl font-bold text-gray-800 mb-4">
+                Please Sign In
+              </h1>
+              <p className="text-gray-600 mb-6">
+                You need to sign in to view your profile.
+              </p>
+              <Button
+                onClick={() => (window.location.href = "/login")}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 Go to Login
@@ -130,25 +108,65 @@ const SeniorProfilePage: React.FC = () => {
     );
   }
 
-  const userData = user?.user_metadata || {};
-  const rollNo = profile?.rollNo || profile?.college_id || userData.rollNo || userData.college_id || "Not provided";
-  const getBranch = (): string => {
-    if (profile?.branch) return profile.branch;
-    if (userData.branch) return userData.branch;
-    return getBranchFromRollNo(rollNo);
-  };
-  const currentYear = getCurrentYear(rollNo);
+  // Handle error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Profile Error</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-  const profileData = {
-    name: profile?.name || userData.name || user?.email?.split('@')[0] || "Senior Student",
-    email: user?.email || "Not available",
-    gender: profile?.gender || userData.gender || "Not specified",
+  // Use database data directly (no metadata fallback)
+  if (!profileData) {
+    // Profile data is still loading or not found
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Profile Not Found</h2>
+          <p className="text-gray-600 mb-4">Your senior profile could not be found in the database.</p>
+          <Link to="/senior-home">
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const rollNo = profileData.rollno || "Not provided";
+  const currentYear = getCurrentYear(rollNo);
+  
+  const displayData = {
+    name: profileData.name || "No name",
+    email: profileData.email || "No email",
+    gender: profileData.gender || detectGenderFromName(profileData.name || ""),
     college_id: rollNo,
-    phone: profile?.phoneNo || profile?.phone || userData.phoneNo || userData.phone || "Not provided",
-    city: profile?.city || userData.city || "Not provided",
-    branch: getBranch(),
-    year: currentYear
+    phone: profileData.mobile || "Not provided",
+    city: profileData.native_place || "Not provided",
+    branch: profileData.branch || getBranchFromRollNo(rollNo),
+    year: currentYear,
+    is_public: profileData.is_public ?? true,
   };
+
+  // Debug logging
+  console.log('🔍 Senior Profile Data (Database Only):', {
+    profileData,
+    displayData,
+    user: user?.email
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -180,7 +198,9 @@ const SeniorProfilePage: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-200">
               <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-emerald-700">Active</span>
+              <span className="text-sm font-medium text-emerald-700">
+                Active
+              </span>
             </div>
           </div>
         </div>
@@ -196,24 +216,56 @@ const SeniorProfilePage: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-end md:justify-between -mt-16">
                 {/* Avatar and Basic Info */}
                 <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6 md:mb-0">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg">
-                    {profileData.name.charAt(0).toUpperCase()}
+                  <div
+                    className="relative group cursor-pointer"
+                    title="Click to change avatar"
+                  >
+                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                      {avatarLoading ? (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                        </div>
+                      ) : (
+                        <img
+                          src={avatarUrl}
+                          alt={`${displayData.name}'s avatar`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                            const fallback = document.createElement("div");
+                            fallback.className =
+                              "w-full h-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white text-2xl font-bold";
+                            fallback.textContent = displayData.name
+                              .charAt(0)
+                              .toUpperCase();
+                            target.parentElement?.appendChild(fallback);
+                          }}
+                        />
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setShowAvatarSelector(true)}
+                      className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    >
+                      <Camera className="h-6 w-6 text-white" />
+                    </button>
                   </div>
                   <div className="text-center md:text-left">
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                      {profileData.name}
+                      {displayData.name}
                     </h1>
                     <div className="space-y-2 mb-3">
                       <div className="flex items-center gap-2 justify-center md:justify-start">
                         <div className="flex items-center gap-2 bg-blue-100 px-3 py-1 rounded-full">
                           <GraduationCap className="h-4 w-4 text-blue-700" />
                           <span className="text-lg font-bold text-blue-800">
-                            {profileData.year} Student
+                            {displayData.year} Student
                           </span>
                         </div>
                       </div>
                       <p className="text-gray-800 font-semibold text-base">
-                        {profileData.branch}
+                        {displayData.branch}
                       </p>
                       <p className="text-gray-700 text-sm font-medium">
                         NIT Jalandhar
@@ -221,7 +273,7 @@ const SeniorProfilePage: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-1 text-sm text-gray-600 justify-center md:justify-start mt-2">
                       <Mail className="h-4 w-4" />
-                      {profileData.email}
+                      {displayData.email}
                     </div>
                   </div>
                 </div>
@@ -252,55 +304,93 @@ const SeniorProfilePage: React.FC = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Full Name</label>
-                  <p className="text-gray-800 font-medium">{profileData.name}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    Full Name
+                  </label>
+                  <p className="text-gray-800 font-medium">
+                    {displayData.name}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
-                  <p className="text-gray-800 font-medium">{profileData.email}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    Email
+                  </label>
+                  <p className="text-gray-800 font-medium">
+                    {displayData.email}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Gender</label>
-                  <p className="text-gray-800 font-medium">{profileData.gender}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    Gender
+                  </label>
+                  <p className="text-gray-800 font-medium">
+                    {displayData.gender}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Phone Number</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Phone Number
+                  </label>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-gray-400" />
-                    <p className="text-gray-800 font-medium">{profileData.phone}</p>
+                    <p className="text-gray-800 font-medium">
+                      {displayData.phone}
+                    </p>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Current Year</label>
-                  <p className="text-gray-800 font-medium">{profileData.year}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    Current Year
+                  </label>
+                  <p className="text-gray-800 font-medium">
+                    {displayData.year}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Branch</label>
-                  <p className="text-gray-800 font-medium">{profileData.branch}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    Branch
+                  </label>
+                  <p className="text-gray-800 font-medium">
+                    {displayData.branch}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">College</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    College
+                  </label>
                   <p className="text-gray-800 font-medium">NIT Jalandhar</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Roll Number</label>
-                  <p className="text-gray-800 font-medium">{profileData.college_id}</p>
+                  <label className="text-sm font-medium text-gray-500">
+                    Roll Number
+                  </label>
+                  <p className="text-gray-800 font-medium">
+                    {displayData.college_id}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Location</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    Location
+                  </label>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-gray-400" />
-                    <p className="text-gray-800 font-medium">{profileData.city}</p>
+                    <p className="text-gray-800 font-medium">
+                      {displayData.city}
+                    </p>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Profile Visibility</label>
-                  <p className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${
-                    profileVisibility
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-200 text-gray-600"
-                  }`}>
-                    {profileVisibility ? "Public Profile" : "Private Profile"}
+                  <label className="text-sm font-medium text-gray-500">
+                    Profile Visibility
+                  </label>
+                  <p
+                    className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                      displayData.is_public
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {displayData.is_public ? "Public Profile" : "Private Profile"}
                   </p>
                 </div>
               </div>
@@ -317,16 +407,16 @@ const SeniorProfilePage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-start text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
                 >
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Contact Us
                 </Button>
                 <Link to="/report-us" className="w-full">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start text-gray-700 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
                   >
                     <Flag className="h-4 w-4 mr-2" />
@@ -338,6 +428,22 @@ const SeniorProfilePage: React.FC = () => {
           </Card>
         </div>
       </main>
+
+      {/* Avatar Selector Modal */}
+      {showAvatarSelector && user && (
+        <SeniorAvatarSelector
+          isOpen={showAvatarSelector}
+          onClose={() => setShowAvatarSelector(false)}
+          userGender={
+            (displayData.gender === "female" ? "female" : "male") as
+              | "male"
+              | "female"
+          }
+          currentAvatarUrl={avatarUrl}
+          onAvatarChange={updateAvatar}
+        />
+      )}
+
       <Footer />
     </div>
   );

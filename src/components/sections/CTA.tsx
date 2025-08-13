@@ -7,11 +7,11 @@ const CTA: React.FC = () => {
   const navigate = useNavigate();
 
   const handleJuniorClick = () => {
-    navigate("/junior-login?mode=junior");
+    navigate("/?loginMode=junior");
   };
 
   const handleSeniorClick = () => {
-    navigate("/junior-login?mode=senior");
+    navigate("/?loginMode=senior");
   };
 
   return (

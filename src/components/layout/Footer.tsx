@@ -12,8 +12,7 @@ import {
   MapPin,
   Instagram,
   Twitter,
-  Facebook,
-  MessageCircle,
+  Linkedin,
 } from "lucide-react";
 import { useUserNavigation } from "@/hooks/useUserNavigation";
 
@@ -72,7 +71,7 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 gap-y-12 items-start">
           {/* Left Column - Logo and Description */}
           <div className="space-y-4 h-full">
@@ -106,32 +105,25 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex space-x-3">
               <a
-                href="#"
+                href="https://www.instagram.com/campusconnects.app?utm_source=qr&igsh=a3YwOGVlbHBtMGls "
                 className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow duration-200 text-pink-500 hover:text-pink-600"
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com/company/campus-connect-stdntpartner/"
+                className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow duration-200 text-blue-600 hover:text-blue-700"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-5 w-5" />
+              </a>
+              <a
+                href="https://x.com/Campus_Connec_t?t=yBGsSWSy_hU7YKZ-Brl11A&s=08 "
                 className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow duration-200 text-blue-500 hover:text-blue-600"
                 aria-label="Twitter"
               >
                 <Twitter className="h-5 w-5" />
-              </a>
-              <a
-                href="#"
-                className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow duration-200 text-blue-600 hover:text-blue-700"
-                aria-label="Facebook"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a
-                href="#"
-                className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow duration-200 text-green-500 hover:text-green-600"
-                aria-label="Chat"
-              >
-                <MessageCircle className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -143,14 +135,14 @@ const Footer: React.FC = () => {
               <h4 className="text-lg font-semibold text-gray-800">Quick Links</h4>
             </div>
             <ul className="space-y-3">
-              <li>
+              {/* <li>
                 <button
                   onClick={() => scrollToSection("about")}
                   className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
                 >
                   About Us
                 </button>
-              </li>
+              </li> */}
               <li>
                 <Link
                   to="/about-idea"
@@ -159,14 +151,14 @@ const Footer: React.FC = () => {
                   Idea Behind Website
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <button
                   onClick={() => scrollToSection("admissions-update")}
                   className="text-gray-600 hover:text-pink-600 transition-colors duration-200 text-sm"
                 >
                   Admission Updates
                 </button>
-              </li>
+              </li> */}
               <li>
                 <Link
                   to="/privacy-policy"
@@ -226,20 +218,6 @@ const Footer: React.FC = () => {
                 </span>
               </div>
             </div>
-            <p className="text-gray-600 text-sm">
-              Have a question or suggestion? Reach out to us directly!
-            </p>
-            <Button
-              className="w-full bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-purple-700 font-semibold py-2 rounded-lg transition-all duration-200 shadow-none"
-              onClick={() => navigate("/contact-form")}
-              type="button"
-            >
-              Open Contact Form
-            </Button>
-            {/* Contact form removed, only button remains */}
-            {submitted && (
-              <p className="text-xs text-green-500">Thank you for contacting us!</p>
-            )}
           </div>
 
           {/* NITJ Admissions Updates */}
@@ -262,42 +240,12 @@ const Footer: React.FC = () => {
                   NITJ Official Admissions Page
                 </a>
               </li>
-              <li>
-                <a
-                  href="https://www.nitj.ac.in/nitj_files/links/BTech_Admission_Brochure_2025.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-700 underline hover:text-purple-700 text-sm"
-                >
-                  B.Tech Admission Brochure 2025
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.nitj.ac.in/nitj_files/links/Fee_Structure_2025.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-700 underline hover:text-purple-700 text-sm"
-                >
-                  Fee Structure 2025
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.nitj.ac.in/nitj_files/links/Important_Dates_2025.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-700 underline hover:text-purple-700 text-sm"
-                >
-                  Important Dates 2025
-                </a>
-              </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Section */}
-        <div className="mt-12 pt-8 border-t border-pink-200">
+        <div className="mt-8 pt-6 border-t border-pink-200">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-600 text-sm">
               Made with ❤️ by the Campus Connect Team

@@ -13,6 +13,7 @@ import {
   Lock
 } from "lucide-react";
 import { Senior } from "@/types/senior";
+// Removed getUserAvatar import - now using database avatar URLs
 
 interface SeniorCardProps {
   senior: Senior;
@@ -21,26 +22,7 @@ interface SeniorCardProps {
 const SeniorCard: React.FC<SeniorCardProps> = ({ senior }) => {
   const [requestSent, setRequestSent] = useState(false);
 
-  // Generate first letter from name
-  const getFirstLetter = (name: string) => {
-    return name.charAt(0).toUpperCase();
-  };
-
-  // Generate background color based on name
-  const getAvatarColor = (name: string) => {
-    const colors = [
-      'bg-gradient-to-br from-purple-500 to-purple-600',
-      'bg-gradient-to-br from-pink-500 to-pink-600',
-      'bg-gradient-to-br from-blue-500 to-blue-600',
-      'bg-gradient-to-br from-green-500 to-green-600',
-      'bg-gradient-to-br from-yellow-500 to-yellow-600',
-      'bg-gradient-to-br from-red-500 to-red-600',
-      'bg-gradient-to-br from-indigo-500 to-indigo-600',
-      'bg-gradient-to-br from-teal-500 to-teal-600'
-    ];
-    const index = name.charCodeAt(0) % colors.length;
-    return colors[index];
-  };
+  // Use database avatar URL directly
 
   const handleWhatsAppChat = () => {
     if (senior.contactNumber) {
@@ -75,11 +57,22 @@ const SeniorCard: React.FC<SeniorCardProps> = ({ senior }) => {
         {/* Header with Avatar and Info */}
         <div className="flex items-start gap-4 mb-6">
           <div className="relative">
-            {/* Smaller Avatar with single letter */}
-            <div className={`w-12 h-12 rounded-xl ${getAvatarColor(senior.name)} flex items-center justify-center text-white font-bold text-lg shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
-              {getFirstLetter(senior.name)}
-              {/* Shine effect */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-white/20 to-transparent"></div>
+            {/* Database Avatar */}
+            <div className="w-12 h-12 rounded-xl overflow-hidden shadow-lg transform group-hover:scale-110 transition-transform duration-300 border-2 border-white">
+              <img 
+                src={senior.avatarId} 
+                alt={senior.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback to colored circle with initials if image fails
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = document.createElement('div');
+                  fallback.className = 'w-full h-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg';
+                  fallback.textContent = senior.name.charAt(0).toUpperCase();
+                  target.parentElement?.appendChild(fallback);
+                }}
+              />
             </div>
             {/* Verified badge */}
             {senior.verified && (
@@ -120,7 +113,7 @@ const SeniorCard: React.FC<SeniorCardProps> = ({ senior }) => {
               </div>
               <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
                 <GraduationCap className="h-3 w-3" />
-                Class of {senior.graduationYear}
+                {senior.graduationYear}
               </div>
             </div>
 
@@ -129,8 +122,6 @@ const SeniorCard: React.FC<SeniorCardProps> = ({ senior }) => {
               <div className="flex items-center gap-1 text-gray-600">
                 <MapPin className="h-4 w-4 text-gray-500" />
                 <span className="text-sm font-medium">{senior.nativePlace}</span>
-                <span className="text-xs text-gray-400">•</span>
-                <span className="text-sm text-gray-500">{senior.state}</span>
               </div>
             </div>
           </div>

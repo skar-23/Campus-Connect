@@ -6,31 +6,47 @@ import SeniorCard from "@/components/connect/SeniorCard";
 import LoadingSkeleton from "@/components/connect/LoadingSkeleton";
 import NoResults from "@/components/connect/NoResults";
 import { Senior, AlternativeSuggestion } from "@/types/senior";
-import { mockSeniors } from "@/data/mockSeniors";
+import { SeniorService } from "@/services/seniorService";
 
 const ConnectWithSeniors: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBranch, setSelectedBranch] = useState("all");
-  const [selectedNativePlace, setSelectedNativePlace] = useState("all");
+  const [selectedBranch, setSelectedBranch] = useState("");
+  const [selectedState, setSelectedState] = useState("");
   const [seniors, setSeniors] = useState<Senior[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Load mock data
+  // Load real data from database
   useEffect(() => {
-    setTimeout(() => {
-      setSeniors(mockSeniors);
-      setIsLoading(false);
-    }, 1000);
+    const loadSeniors = async () => {
+      try {
+        setIsLoading(true);
+        const seniorsData = await SeniorService.getAllSeniors();
+        
+        // Keep the 1-second loading delay as requested
+        setTimeout(() => {
+          setSeniors(seniorsData);
+          setIsLoading(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Error loading seniors:', error);
+        setTimeout(() => {
+          setSeniors([]);
+          setIsLoading(false);
+        }, 1000);
+      }
+    };
+
+    loadSeniors();
   }, []);
 
   const filteredSeniors = seniors.filter(senior => {
     const matchesSearch = senior.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          senior.branch.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         senior.specialties.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesBranch = selectedBranch === "all" || senior.branch === selectedBranch;
-    const matchesNativePlace = selectedNativePlace === "all" || senior.nativePlace === selectedNativePlace;
-    return matchesSearch && matchesBranch && matchesNativePlace;
+                         senior.nativePlace.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesBranch = selectedBranch === "" || senior.branch === selectedBranch;
+    const matchesState = selectedState === "" || senior.state === selectedState;
+    return matchesSearch && matchesBranch && matchesState;
   });
 
   // Alternative suggestions when no exact match found
@@ -39,8 +55,8 @@ const ConnectWithSeniors: React.FC = () => {
 
     let suggestions: AlternativeSuggestion[] = [];
 
-    // If both branch and native place are selected but no results
-    if (selectedBranch !== "all" && selectedNativePlace !== "all") {
+    // If both branch and state are selected but no results
+    if (selectedBranch !== "" && selectedState !== "") {
       // First try: Same branch, any native place
       const branchMatches = seniors.filter(senior => senior.branch === selectedBranch);
       if (branchMatches.length > 0) {
@@ -49,26 +65,26 @@ const ConnectWithSeniors: React.FC = () => {
           text: `${selectedBranch} students from all locations`,
           seniors: branchMatches,
           action: () => {
-            setSelectedNativePlace("all");
+            setSelectedState("");
           }
         });
       }
 
-      // Second try: Same native place, any branch
-      const nativePlaceMatches = seniors.filter(senior => senior.nativePlace === selectedNativePlace);
-      if (nativePlaceMatches.length > 0) {
+      // Second try: Same state, any branch
+      const stateMatches = seniors.filter(senior => senior.state === selectedState);
+      if (stateMatches.length > 0) {
         suggestions.push({
-          type: "native",
-          text: `Students from ${selectedNativePlace} (all branches)`,
-          seniors: nativePlaceMatches,
+          type: "state",
+          text: `Students from ${selectedState} (all branches)`,
+          seniors: stateMatches,
           action: () => {
-            setSelectedBranch("all");
+            setSelectedBranch("");
           }
         });
       }
     }
     // If only branch is selected but no results
-    else if (selectedBranch !== "all" && selectedNativePlace === "all") {
+    else if (selectedBranch !== "" && selectedState === "") {
       const allSeniors = seniors.filter(senior => senior.id); // All seniors
       if (allSeniors.length > 0) {
         suggestions.push({
@@ -76,13 +92,13 @@ const ConnectWithSeniors: React.FC = () => {
           text: "All available seniors",
           seniors: allSeniors,
           action: () => {
-            setSelectedBranch("all");
+            setSelectedBranch("");
           }
         });
       }
     }
-    // If only native place is selected but no results
-    else if (selectedBranch === "all" && selectedNativePlace !== "all") {
+    // If only state is selected but no results
+    else if (selectedBranch === "" && selectedState !== "") {
       const allSeniors = seniors.filter(senior => senior.id); // All seniors
       if (allSeniors.length > 0) {
         suggestions.push({
@@ -90,7 +106,7 @@ const ConnectWithSeniors: React.FC = () => {
           text: "All available seniors",
           seniors: allSeniors,
           action: () => {
-            setSelectedNativePlace("all");
+            setSelectedState("");
           }
         });
       }
@@ -102,8 +118,8 @@ const ConnectWithSeniors: React.FC = () => {
   const alternativeSuggestions = getAlternativeSuggestions();
 
   const handleResetFilters = () => {
-    setSelectedBranch("all");
-    setSelectedNativePlace("all");
+    setSelectedBranch("");
+    setSelectedState("");
     setSearchTerm("");
   };
 
@@ -130,8 +146,8 @@ const ConnectWithSeniors: React.FC = () => {
           setSearchTerm={setSearchTerm}
           selectedBranch={selectedBranch}
           setSelectedBranch={setSelectedBranch}
-          selectedNativePlace={selectedNativePlace}
-          setSelectedNativePlace={setSelectedNativePlace}
+          selectedState={selectedState}
+          setSelectedState={setSelectedState}
           resultCount={filteredSeniors.length}
         />
 

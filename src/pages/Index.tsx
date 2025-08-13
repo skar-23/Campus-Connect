@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Hero from "@/components/sections/Hero";
@@ -6,14 +7,15 @@ import AboutUs from "@/components/sections/AboutUs";
 import AdmissionsUpdate from "@/components/sections/AdmissionsUpdate";
 import ChaiThanks from "@/components/sections/ChaiThanks";
 import CTA from "@/components/sections/CTA";
-import Contact from "@/components/sections/Contact";
+// import Contact from "@/components/sections/Contact";
 import Modal from "@/components/ui/Modal";
 import LoginForm from "@/components/ui/LoginForm";
 import ContactForm from "@/components/ui/ContactForm";
 import { Button } from "@/components/ui/button";
-import { User, MessageSquare } from "lucide-react";
+import { User, MessageSquare, CheckCircle, X } from "lucide-react";
 
 const Index: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState<{ [key: string]: boolean }>({});
@@ -21,6 +23,8 @@ const Index: React.FC = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [loginUserType, setLoginUserType] = useState<'junior' | 'senior'>('junior');
+  // Removed success message state as per requirements
 
   // Intersection Observer for animations
   useEffect(() => {
@@ -86,6 +90,17 @@ const Index: React.FC = () => {
       }
     };
   }, [lastScrollY, isHovering, scrollTimeout]);
+
+  // Check for loginMode in URL params
+  useEffect(() => {
+    const loginMode = searchParams.get('loginMode');
+    if (loginMode === 'senior' || loginMode === 'junior') {
+      setLoginUserType(loginMode);
+      setIsLoginModalOpen(true);
+      // Clear URL params after opening modal
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleLoginClick = () => {
     setIsLoginModalOpen(true);
@@ -189,13 +204,18 @@ const Index: React.FC = () => {
 
       <Footer />
 
+      {/* Removed success message display as per requirements */}
+
       {/* Modals - Highest z-index for overlays */}
       <Modal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         title="Login / Sign Up"
       >
-        <LoginForm onClose={() => setIsLoginModalOpen(false)} />
+        <LoginForm 
+          onClose={() => setIsLoginModalOpen(false)} 
+          defaultUserType={loginUserType}
+        />
       </Modal>
       <Modal
         isOpen={isContactModalOpen}
@@ -214,15 +234,6 @@ const Index: React.FC = () => {
           aria-label="Login or Sign Up"
         >
           <User className="h-6 w-6" />
-        </Button>
-        <Button
-          onClick={handleContactClick}
-          size="icon"
-          variant="secondary"
-          className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white transform hover:scale-110 transition-all duration-300"
-          aria-label="Contact Us"
-        >
-          <MessageSquare className="h-6 w-6" />
         </Button>
       </div>
     </div>

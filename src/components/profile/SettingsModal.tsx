@@ -14,34 +14,45 @@ import {
   Eye, 
   EyeOff,
   AlertTriangle,
-  Save
+  Save,
+  Camera
 } from "lucide-react";
+import AvatarSelector from "./AvatarSelector";
+import { getUserAvatar, getAvatarById } from "@/utils/avatarUtils";
 
 interface SettingsModalProps {
-  isOpen: boolean;
   onClose: () => void;
-  onEditProfile: () => void;
-  onDeleteAccount: () => void;
+  onEditProfile?: () => void;
+  onDeleteAccount?: () => void;
+  userId?: string;
+  userGender?: 'male' | 'female';
+  currentAvatarId?: string;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ 
-  isOpen, 
   onClose, 
   onEditProfile,
-  onDeleteAccount 
+  onDeleteAccount,
+  userId = 'demo-user',
+  userGender = 'male',
+  currentAvatarId
 }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+  const [userAvatarId, setUserAvatarId] = useState(currentAvatarId || '');
   
   // Notification settings
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [profileVisibility, setProfileVisibility] = useState(true);
 
-  if (!isOpen) return null;
+  // Get current avatar
+  const currentAvatar = userAvatarId ? getAvatarById(userAvatarId) : getUserAvatar(userId, userGender);
+
 
   const handlePasswordChange = () => {
     if (newPassword !== confirmPassword) {
@@ -57,10 +68,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleDeleteAccount = () => {
     if (showDeleteConfirm) {
-      onDeleteAccount();
+      onDeleteAccount?.();
     } else {
       setShowDeleteConfirm(true);
     }
+  };
+
+  const handleAvatarChange = (avatarId: string) => {
+    setUserAvatarId(avatarId);
   };
 
   return (
@@ -90,12 +105,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             </CardHeader>
             <CardContent className="space-y-4">
               <Button 
-                onClick={onEditProfile}
-                className="w-full justify-start bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200"
+                onClick={() => setShowAvatarSelector(true)}
+                className="w-full justify-start bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200"
               >
-                <User className="mr-2 h-4 w-4" />
-                Edit Profile Information
+                <Camera className="mr-2 h-4 w-4" />
+                Change Avatar
               </Button>
+              
+              {onEditProfile && (
+                <Button 
+                  onClick={onEditProfile}
+                  className="w-full justify-start bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200"
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Edit Profile Information
+                </Button>
+              )}
               
               <div className="flex items-center justify-between">
                 <div>
@@ -286,6 +311,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           </Button>
         </div>
       </div>
+      
+      {/* Avatar Selector Modal */}
+      <AvatarSelector
+        isOpen={showAvatarSelector}
+        onClose={() => setShowAvatarSelector(false)}
+        userGender={userGender}
+        currentAvatarId={userAvatarId}
+        userId={userId}
+        onAvatarChange={handleAvatarChange}
+      />
     </div>
   );
 };

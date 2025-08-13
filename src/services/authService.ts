@@ -52,7 +52,7 @@ export const signUpUser = async (
     if (collegeId || rollNo) {
       // Create senior profile
       const { error: profileError } = await supabase
-        .from('senior_profiles')
+        .from('seniors')
         .insert({
           id: data.user.id,
           name,
@@ -71,7 +71,7 @@ export const signUpUser = async (
     } else {
       // Create junior profile
       const { error: profileError } = await supabase
-        .from('junior_profile')
+        .from('juniors')
         .insert({
           id: data.user.id,
           name,

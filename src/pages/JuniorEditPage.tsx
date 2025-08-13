@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { getJuniorProfiles } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { ArrowLeft, User, Key, Mail, Shield, LogOut, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,93 +9,82 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Footer from "@/components/layout/Footer";
-
-const initialProfile = {
-  name: "Aarav Sharma",
-  gender: "Male",
-  email: "aarav.sharma@email.com",
-  phone: "+91 98765 43210",
-  year: "1st Year",
-};
+import { useSimpleJuniorProfile } from "@/hooks/useSimpleJuniorProfile";
+import { updateUserProfile } from "@/services/profileService";
 
 const profileFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  gender: z.string().nonempty({ message: "Please select a gender." }),
-  phone: z.string().nonempty({ message: "Phone number is required." }),
+  gender: z.enum(["male", "female"], { message: "Please select a gender." }),
+  mobile: z.string().optional(),
   email: z.string().email(),
+  year: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 const JuniorEditPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, updateProfile, signOut } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const { user, signOut } = useAuth();
+  const { profile, loading, error, refetch } = useSimpleJuniorProfile();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      name: initialProfile.name,
-      gender: initialProfile.gender,
-      phone: initialProfile.phone,
-      email: initialProfile.email,
+      name: "",
+      gender: "male",
+      mobile: "",
+      email: "",
+      year: "",
     },
   });
 
   const [isSaving, setIsSaving] = useState(false);
 
+  // Load profile data into form when available
   useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-    // eslint-disable-next-line
-  }, [user]);
-
-  const fetchProfile = async () => {
-    try {
-      setLoading(true);
-      if (!user) return;
-      const { data, error } = await getJuniorProfiles()
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-      if (error && !error.message.includes('No rows found')) throw error;
-      if (data) {
-        form.reset({
-          name: data.name || '',
-          gender: data.gender || '',
-          phone: data.phone || '',
-          email: data.email || '',
-        });
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error fetching profile",
-        description: error.message,
-        variant: "destructive",
+    if (profile) {
+      form.reset({
+        name: profile.name || '',
+        gender: profile.gender || 'male',
+        mobile: profile.mobile || '',
+        email: profile.email || '',
+        year: profile.year || '',
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [profile, form]);
 
   const handleSubmit = async (values: ProfileFormValues) => {
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "User not authenticated",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
-      const updateData: { name?: string; gender?: string } = {};
-      if (values.name) updateData.name = values.name;
-      if (values.gender) updateData.gender = values.gender;
-      await updateProfile(updateData);
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-        variant: "success",
+      // Use updateUserProfile function with userId as first parameter
+      await updateUserProfile(user.id, {
+        name: values.name,
+        gender: values.gender,
+        mobile: values.mobile,
+        // Don't include email and year as they're read-only
       });
+      
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+      });
+      
+      // Navigate back to profile page
       navigate("/junior-profile");
     } catch (error: any) {
+      console.error('Profile update error:', error);
       toast({
         title: "Error updating profile",
-        description: error.message,
+        description: error.message || "Failed to update profile",
         variant: "destructive",
       });
     } finally {
@@ -137,7 +125,18 @@ const JuniorEditPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5c7bb5]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Unable to load profile</h2>
+          <p className="text-gray-600">{error || 'Profile not found'}</p>
+        </div>
       </div>
     );
   }
@@ -230,9 +229,8 @@ const JuniorEditPage: React.FC = () => {
                       className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                     >
                       <option value="">Select gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
                     </select>
                     {form.formState.errors.gender && (
                       <span className="text-xs text-red-500">{form.formState.errors.gender.message}</span>
@@ -240,30 +238,30 @@ const JuniorEditPage: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500 mb-1">
-                      Phone Number
+                      Mobile Number
                     </label>
                     <input
                       type="text"
-                      {...form.register("phone")}
+                      {...form.register("mobile")}
                       className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                      placeholder="Your phone number"
+                      placeholder="Your mobile number"
                     />
-                    {form.formState.errors.phone && (
-                      <span className="text-xs text-red-500">{form.formState.errors.phone.message}</span>
+                    {form.formState.errors.mobile && (
+                      <span className="text-xs text-red-500">{form.formState.errors.mobile.message}</span>
                     )}
                   </div>
-                </div>
-                {/* Display year as read-only */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
-                    Year
-                  </label>
-                  <input
-                    type="text"
-                    value={initialProfile.year}
-                    readOnly
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 bg-gray-100 text-gray-700 cursor-not-allowed"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">
+                      Year
+                    </label>
+                    <input
+                      type="text"
+                      {...form.register("year")}
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      placeholder="1st year"
+                      disabled
+                    />
+                  </div>
                 </div>
                 <Button
                   type="submit"
@@ -317,6 +315,7 @@ const JuniorEditPage: React.FC = () => {
           </Card>
         </div>
       </main>
+      
       <Footer />
     </div>
   );

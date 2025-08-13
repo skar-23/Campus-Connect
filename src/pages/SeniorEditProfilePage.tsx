@@ -114,19 +114,24 @@ const SeniorEditProfilePage: React.FC = () => {
     return partialMatch || "";
   };
 
-  // Fetch user profile from database
+  // Fetch user profile from seniors database
   const fetchProfile = async () => {
     if (!user) return;
     setProfileLoading(true);
     try {
-      const { data } = await supabase
-        .from("profiles")
+      const { data, error } = await supabase
+        .from("seniors")
         .select("*")
         .eq("id", user.id)
         .single();
-      setProfile(data);
-    } catch {
-      // ignore
+      
+      if (error) {
+        console.error('Error fetching senior profile:', error);
+      } else {
+        setProfile(data);
+      }
+    } catch (err) {
+      console.error('Error:', err);
     } finally {
       setProfileLoading(false);
     }
@@ -143,13 +148,13 @@ const SeniorEditProfilePage: React.FC = () => {
       } else if (userData.branch && branches.includes(userData.branch)) {
         userBranch = userData.branch;
       } else if (
-        profile?.rollNo ||
+        profile?.rollno ||
         profile?.college_id ||
         userData.rollNo ||
         userData.college_id
       ) {
         const rollNo =
-          profile?.rollNo ||
+          profile?.rollno ||
           profile?.college_id ||
           userData.rollNo ||
           userData.college_id;
@@ -161,23 +166,16 @@ const SeniorEditProfilePage: React.FC = () => {
 
       setFormData({
         name: profile?.name || userData.name || "",
-        email: user.email || "",
-        phone:
-          profile?.phoneNo ||
-          profile?.phone ||
-          userData.phoneNo ||
-          userData.phone ||
-          "",
-        city: profile?.city || userData.city || "",
+        email: profile?.email || user.email || "",
+        phone: profile?.mobile || userData.phoneNo || userData.phone || "",
+        city: profile?.native_place || userData.city || "",
         gender: profile?.gender || userData.gender || "",
-        rollNo:
-          profile?.rollNo ||
-          profile?.college_id ||
-          userData.rollNo ||
-          userData.college_id ||
-          "",
+        rollNo: profile?.rollno || userData.rollNo || userData.college_id || "",
         branch: userBranch,
       });
+
+      // Initialize profile visibility toggle from database
+      setProfileVisibility(profile?.is_public ?? true);
     }
   }, [user, branches, profile, profileLoading]);
 
@@ -346,6 +344,12 @@ const SeniorEditProfilePage: React.FC = () => {
     setSaving(true);
     setNotification({ type: null, message: "" });
 
+    console.log('💾 Starting profile save...', {
+      formData,
+      profileVisibility,
+      user: user?.id
+    });
+
     try {
       if (!formData.name.trim()) {
         setNotification({
@@ -369,64 +373,94 @@ const SeniorEditProfilePage: React.FC = () => {
         throw new Error("No user found");
       }
 
+      // Update seniors table with correct column names
       const updatedData = {
         name: formData.name.trim(),
-        phoneNo: formData.phone.trim(),
-        phone: formData.phone.trim(),
-        city: formData.city.trim(),
+        mobile: formData.phone.trim(),
+        native_place: formData.city.trim(),
         gender: formData.gender,
-        rollNo: formData.rollNo.trim(),
-        college_id: formData.rollNo.trim(),
+        rollno: formData.rollNo.trim(),
         branch: formData.branch.trim(),
+        is_public: profileVisibility,
       };
 
-      const { data: authData, error: authError } =
-        await supabase.auth.updateUser({
-          data: updatedData,
-        });
+      console.log('📦 Data to be saved:', updatedData);
 
-      if (authError) {
-        console.error("Auth update error:", authError);
-        throw new Error(`Auth update failed: ${authError.message}`);
-      }
+      // Update user metadata for compatibility
+      await supabase.auth.updateUser({
+        data: {
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          city: formData.city.trim(),
+          gender: formData.gender,
+          rollNo: formData.rollNo.trim(),
+          branch: formData.branch.trim(),
+        },
+      });
 
-      try {
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .upsert(
-            {
-              id: user.id,
-              email: user.email,
-              ...updatedData,
-              updated_at: new Date().toISOString(),
-            },
-            {
-              onConflict: "id",
-            }
-          );
+      // Update seniors table
+      // Debug RLS and authentication
+      console.log('🔐 Authentication check:', {
+        userId: user.id,
+        userEmail: user.email,
+        profileId: profile?.id,
+        profileEmail: profile?.email
+      });
 
-        if (profileError) {
-          console.error("Profile table update failed:", profileError);
-          console.warn(
-            "Profile table update failed, but auth update succeeded"
-          );
-        } else {
-          setProfile((prev) => ({
-            ...prev,
+      // Test current authentication state
+      const { data: authTest } = await supabase.auth.getUser();
+      console.log('🔍 Current auth state:', {
+        authUserId: authTest.user?.id,
+        authUserEmail: authTest.user?.email
+      });
+
+      // Test RLS policies with a simple SELECT query first
+      const { data: selectTest, error: selectError } = await supabase
+        .from("seniors")
+        .select("id, email")
+        .eq("id", user.id);
+      
+      console.log('🔍 RLS SELECT test:', { selectTest, selectError });
+
+      console.log('🔄 Updating seniors table with data:', {
+        id: user.id,
+        email: user.email,
+        ...updatedData,
+      });
+
+      const { data: updateResult, error: updateError } = await supabase
+        .from("seniors")
+        .upsert(
+          {
+            id: user.id,
+            email: user.email,
             ...updatedData,
-            updated_at: new Date().toISOString(),
-          }));
-        }
-      } catch (profileTableError) {
-        console.error("Profile table error:", profileTableError);
+          },
+          {
+            onConflict: "id",
+          }
+        )
+        .select();
+        
+      console.log('📊 Update result:', { updateResult, updateError });
+        
+      if (updateError) {
+        console.error('❌ Database update error:', {
+          code: updateError.code,
+          message: updateError.message,
+          details: updateError.details,
+          hint: updateError.hint
+        });
+        throw updateError;
       }
+      
+      setProfile((prev) => ({
+        ...prev,
+        ...updatedData,
+        updated_at: new Date().toISOString(),
+      }));
 
-      try {
-        await supabase.auth.refreshSession();
-        console.log("Session refreshed successfully");
-      } catch (refreshError) {
-        console.warn("Session refresh failed:", refreshError);
-      }
+      await supabase.auth.refreshSession();
 
       setNotification({
         type: "success",
@@ -437,24 +471,23 @@ const SeniorEditProfilePage: React.FC = () => {
         navigate("/senior-profile");
       }, 2000);
     } catch (error: any) {
-      console.error("Error saving profile:", error);
-
+      console.error('🚫 Save operation failed:', error);
+      
       let errorMessage = "Failed to update profile. Please try again.";
-
-      if (error.message) {
-        if (error.message.includes("Auth update failed")) {
-          errorMessage =
-            "Failed to update user authentication data. Please try again.";
-        } else if (error.message.includes("No user found")) {
-          errorMessage = "User session expired. Please sign in again.";
-        } else if (error.message.includes("branch")) {
-          errorMessage =
-            "Invalid branch selected. Please choose from the dropdown.";
-        } else {
-          errorMessage = `Update failed: ${error.message}`;
-        }
+      
+      // Provide more specific error messages
+      if (error.code === 'PGRST301') {
+        errorMessage = "Permission denied. Please check your account status.";
+      } else if (error.code === '23505') {
+        errorMessage = "Duplicate entry detected. Please check your data.";
+      } else if (error.message?.includes('RLS')) {
+        errorMessage = "Access denied. Please try logging out and back in.";
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      } else if (error.message) {
+        errorMessage = `Error: ${error.message}`;
       }
-
+      
       setNotification({
         type: "error",
         message: errorMessage,
@@ -779,13 +812,23 @@ const SeniorEditProfilePage: React.FC = () => {
                     Profile Visibility
                   </label>
                   <p className="text-xs text-gray-500">
-                    Make your profile visible to juniors
+                    {profileVisibility ? "Your profile is visible to juniors" : "Your profile is hidden from juniors"}
                   </p>
                 </div>
-                <Switch
-                  checked={profileVisibility}
-                  onCheckedChange={setProfileVisibility}
-                />
+                <div className="flex items-center gap-3">
+                  <span className={`text-xs font-medium ${
+                    profileVisibility ? "text-green-600" : "text-gray-500"
+                  }`}>
+                    {profileVisibility ? "Public" : "Private"}
+                  </span>
+                  <Switch
+                    checked={profileVisibility}
+                    onCheckedChange={(checked) => {
+                      console.log('🔄 Profile visibility changed:', checked);
+                      setProfileVisibility(checked);
+                    }}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

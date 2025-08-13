@@ -14,71 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      junior_profile: {
+      juniors: {
         Row: {
-          created_at: string | null
-          email: string | null
-          gender: string | null
           id: string
-          name: string | null
-          phone: string | null
+          email: string
+          name: string
+          mobile: string | null
+          gender: string | null
+          year: number | null
+          branch: string | null
+          college: string | null
+          city: string | null
+          created_at: string | null
           updated_at: string | null
         }
         Insert: {
-          created_at?: string | null
-          email?: string | null
-          gender?: string | null
           id: string
-          name?: string | null
-          phone?: string | null
+          email: string
+          name: string
+          mobile?: string | null
+          gender?: string | null
+          year?: number | null
+          branch?: string | null
+          college?: string | null
+          city?: string | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Update: {
-          created_at?: string | null
-          email?: string | null
-          gender?: string | null
           id?: string
-          name?: string | null
-          phone?: string | null
+          email?: string
+          name?: string
+          mobile?: string | null
+          gender?: string | null
+          year?: number | null
+          branch?: string | null
+          college?: string | null
+          city?: string | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Relationships: []
       }
-      senior_profiles: {
+      seniors: {
         Row: {
-          college_id: string | null
-          created_at: string | null
-          email: string | null
-          gender: string | null
           id: string
-          name: string | null
-          phone: string | null
-          region: string | null
-          roll_no: string | null
+          email: string
+          name: string
+          mobile: string | null
+          gender: string | null
+          rollno: string | null
+          native_place: string | null
+          branch: string | null
+          is_public: boolean | null
+          created_at: string | null
           updated_at: string | null
         }
         Insert: {
-          college_id?: string | null
-          created_at?: string | null
-          email?: string | null
-          gender?: string | null
           id: string
-          name?: string | null
-          phone?: string | null
-          region?: string | null
-          roll_no?: string | null
+          email: string
+          name: string
+          mobile?: string | null
+          gender?: string | null
+          rollno?: string | null
+          native_place?: string | null
+          branch?: string | null
+          is_public?: boolean | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Update: {
-          college_id?: string | null
-          created_at?: string | null
-          email?: string | null
-          gender?: string | null
           id?: string
-          name?: string | null
-          phone?: string | null
-          region?: string | null
-          roll_no?: string | null
+          email?: string
+          name?: string
+          mobile?: string | null
+          gender?: string | null
+          rollno?: string | null
+          native_place?: string | null
+          branch?: string | null
+          is_public?: boolean | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Relationships: []

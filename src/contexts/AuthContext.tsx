@@ -25,44 +25,87 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // --- THIS IS THE FIX ---
-  // We are adding the logic back to create a public profile after signup.
-  const signUp = async (email: string, password: string, name: string, gender: string, collegeId: string | undefined, phone: string | undefined, region: string | undefined, role: 'junior' | 'senior') => {
+  const signUp = async (
+    email: string,
+    password: string,
+    name: string,
+    gender: string,
+    mobile: string | undefined,
+    role: 'junior' | 'senior',
+    rollno?: string,
+    native_place?: string,
+    branch?: string,
+    is_public?: boolean
+  ) => {
     try {
-      const userData = { name, gender, email, phone, region, college_id: collegeId, role };
-      
-      const { data, error } = await supabase.auth.signUp({
-        email, password, options: { data: userData },
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
       });
 
-      if (error) throw error;
-      if (!data.user) throw new Error("Signup succeeded but no user was returned.");
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Signup succeeded but no user was returned.");
 
-      // CRITICAL STEP ADDED BACK: Create the public profile using an Edge Function
-      const profileData = {
-        userId: data.user.id,
-        userData: userData,
-        isSenior: role === 'senior'
-      };
+      const { user } = authData;
 
-      const { error: functionError } = await supabase.functions.invoke('create-profile', {
-        body: profileData
-      });
-      
-      if (functionError) throw functionError;
+      if (role === 'junior') {
+        const { error: profileError } = await supabase.from('juniors').insert({
+          id: user.id,
+          email: email,
+          name: name,
+          mobile: mobile, // Correct column name is 'mobile'
+          gender: gender,
+        });
 
-      toast({
-        title: "Account Created!",
-        description: "You have been signed up successfully.",
-      });
-      navigateAfterSignIn(role);
+        if (profileError) throw profileError;
+      } else if (role === 'senior') {
+        console.log('Inserting senior data:', {
+          id: user.id,
+          email: email,
+          name: name,
+          mobile: mobile,
+          gender: gender,
+          rollno: rollno,
+          native_place: native_place,
+          branch: branch,
+          is_public: is_public,
+        });
+        
+        const { error: profileError } = await supabase.from('seniors').insert({
+          id: user.id,
+          email: email,
+          name: name,
+          mobile: mobile, // Correct column name is 'mobile'
+          gender: gender,
+          rollno: rollno, // Correct column name is 'rollno'
+          native_place: native_place, // Correct column name is 'native_place'
+          branch: branch, // Adding branch field
+          is_public: is_public, // Adding is_public field
+        });
+
+        if (profileError) {
+          console.error('Error inserting senior data:', profileError);
+          throw profileError;
+        }
+        console.log('Senior data inserted successfully');
+      }
+
+      // Redirect to respective login pages without toast notifications
+      if (role === 'junior') {
+        setTimeout(() => {
+          window.location.href = '/?loginMode=junior';
+        }, 500);
+      } else {
+        setTimeout(() => {
+          window.location.href = '/?loginMode=senior';
+        }, 500);
+      }
 
     } catch (error: any) {
       toast({ title: "Error signing up", description: error.message, variant: "destructive" });
       throw error;
     }
   };
-  // --- END OF FIX ---
 
   const signIn = async (email: string, password: string, userType: 'junior' | 'senior') => {
     try {
@@ -99,7 +142,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (data: {
     name?: string; gender?: string; password?: string; roll_no?: string;
-    phone?: string; email?: string; region?: string;
+    phone?: string; email?: string; region?: string; native_place?: string;
+    branch?: string; is_public?: boolean;
   }) => {
     try {
       if (!user) throw new Error("User not authenticated");
@@ -107,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.password) {
         await supabase.auth.updateUser({ password: data.password });
       }
-      
+
       const isSenior = user.user_metadata?.role === 'senior';
 
       if (isSenior) {
@@ -118,6 +162,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (data.phone !== undefined) seniorUpdateData.phone = data.phone;
         if (data.email !== undefined) seniorUpdateData.email = data.email;
         if (data.region !== undefined) seniorUpdateData.region = data.region;
+        if (data.native_place !== undefined) seniorUpdateData.native_place = data.native_place;
+        if (data.branch !== undefined) seniorUpdateData.branch = data.branch;
+        if (data.is_public !== undefined) seniorUpdateData.is_public = data.is_public;
+
         await updateSeniorProfile(user.id, seniorUpdateData);
       } else {
         if (data.name || data.gender) {

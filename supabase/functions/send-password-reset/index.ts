@@ -40,9 +40,9 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if this is a senior user first (senior_profiles has email field)
+    // Check if this is a senior user first (seniors has email field)
     const { data: seniorProfile, error: seniorError } = await supabase
-      .from('senior_profiles')
+      .from('seniors')
       .select('id, email')
       .eq('email', cleanEmail)
       .maybeSingle();
@@ -67,9 +67,9 @@ serve(async (req) => {
       });
 
       if (authUser?.user) {
-        // Check if this user exists in junior_profile table (junior)
+        // Check if this user exists in juniors table (junior)
         const { data: juniorProfile, error: juniorError } = await supabase
-          .from('junior_profile')
+          .from('juniors')
           .select('id, email')
           .eq('id', authUser.user.id)
           .maybeSingle();
@@ -85,7 +85,7 @@ serve(async (req) => {
           throw new Error('Email ID is not registered. Please signup first.');
         }
       } else {
-        console.log("Email not found in auth.users or senior_profiles:", cleanEmail);
+        console.log("Email not found in auth.users or seniors:", cleanEmail);
         throw new Error('Email ID is not registered. Please signup first.');
       }
     }

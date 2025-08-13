@@ -52,7 +52,7 @@ serve(async (req) => {
       
       console.log("Inserting senior profile data:", seniorData);
       
-      const { error: insertError } = await supabase.from('senior_profiles').insert(seniorData);
+      const { error: insertError } = await supabase.from('seniors').insert(seniorData);
       
       if (insertError) {
         console.error("Error inserting senior profile:", insertError);
@@ -73,7 +73,7 @@ serve(async (req) => {
       
       console.log("Inserting junior profile data:", profileData);
       
-      const { error: insertError } = await supabase.from('junior_profile').insert(profileData);
+      const { error: insertError } = await supabase.from('juniors').insert(profileData);
       
       if (insertError) {
         console.error("Error inserting junior profile:", insertError);

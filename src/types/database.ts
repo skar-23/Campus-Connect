@@ -25,6 +25,6 @@ export interface SeniorProfile {
 
 // Add table type definitions for type-safe database access
 export interface Tables {
-  junior_profile: JuniorProfile;
-  senior_profiles: SeniorProfile;
+  juniors: JuniorProfile;
+  seniors: SeniorProfile;
 }

@@ -11,13 +11,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 
-import AuthPage from "./pages/AuthPage";
-import JuniorSignupPage from "./pages/JuniorSignupPage";
 import JuniorHomePage from "./pages/JuniorHomePage";
 import JuniorProfilePage from "./pages/JuniorProfilePage";
 import JuniorEditPage from "./pages/JuniorEditPage";
 
-import SeniorSignupPage from "./pages/SeniorSignupPage";
+
 import SeniorHomePage from "./pages/SeniorHomePage";
 import SeniorProfilePage from "./pages/SeniorProfilePage";
 
@@ -41,6 +39,9 @@ import LoginForm from "@/components/ui/LoginForm";
 import ContactForm from "@/components/ui/ContactForm";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import AboutIdeaPage from "./pages/AboutIdeaPage";
+import AvatarTest from "@/components/debug/AvatarTest";
+import JuniorSignupPage from "./pages/JuniorSignupPage";
+import SeniorSignupPage from "./pages/SeniorSignupPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,15 +73,12 @@ function AppContent() {
               <div className="App w-full min-h-screen">
                 <Routes>
                   <Route path="/" element={<Index />} />
-                  <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/junior-signup" element={<JuniorSignupPage />} />
                   <Route path="/junior-home" element={<JuniorHomePage />} />
                   <Route
                     path="/junior-profile"
                     element={<JuniorProfilePage />}
                   />
                   <Route path="/junior/edit" element={<JuniorEditPage />} />
-                  <Route path="/senior-signup" element={<SeniorSignupPage />} />
                   <Route path="/senior-home" element={<SeniorHomePage />} />
                   <Route
                     path="/senior-profile"
@@ -122,12 +120,16 @@ function AppContent() {
                     element={<Navigate to="/junior-profile" replace />}
                   />
                   <Route path="/junior-login" element={<LoginForm />} />
+                  <Route path="/senior-login" element={<LoginForm />} />
                   <Route path="/contact-form" element={<ContactForm />} />
                   <Route
                     path="/privacy-policy"
                     element={<PrivacyPolicyPage />}
                   />
                   <Route path="/about-idea" element={<AboutIdeaPage />} />
+                  <Route path="/avatar-test" element={<AvatarTest />} />
+                  <Route path="/junior-signup" element={<JuniorSignupPage />} />
+                  <Route path="/senior-signup" element={<SeniorSignupPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>

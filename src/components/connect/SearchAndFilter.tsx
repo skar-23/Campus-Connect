@@ -13,7 +13,6 @@ interface SearchAndFilterProps {
 }
 
 const branches = [
-  { value: "all", label: "All Branches" },
   { value: "Computer Science Engineering", label: "Computer Science Engineering" },
   { value: "Information Technology", label: "Information Technology" },
   { value: "Civil Engineering", label: "Civil Engineering" },
@@ -27,7 +26,6 @@ const branches = [
 ];
 
 const states = [
-  { value: "all", label: "All States" },
   { value: "Andhra Pradesh", label: "Andhra Pradesh" },
   { value: "Arunachal Pradesh", label: "Arunachal Pradesh" },
   { value: "Assam", label: "Assam" },
@@ -103,7 +101,7 @@ const SearchableCombobox = ({
         option.label.toLowerCase().includes(inputText.toLowerCase())
       );
 
-  // Scroll highlighted option into view
+  // Scroll highlighted option into view with smooth behavior
   React.useEffect(() => {
     if (isOpen && highlightedIndex >= 0) {
       const dropdownElement = containerRef.current?.querySelector('.max-h-60.overflow-y-auto');
@@ -114,11 +112,18 @@ const SearchableCombobox = ({
         const elementBottom = elementTop + highlightedElement.offsetHeight;
         const containerTop = dropdownElement.scrollTop;
         const containerBottom = containerTop + dropdownElement.offsetHeight;
+        const padding = 8; // Add some padding for better visibility
         
-        if (elementTop < containerTop) {
-          dropdownElement.scrollTop = elementTop;
-        } else if (elementBottom > containerBottom) {
-          dropdownElement.scrollTop = elementBottom - dropdownElement.offsetHeight;
+        if (elementTop < containerTop + padding) {
+          dropdownElement.scrollTo({
+            top: Math.max(0, elementTop - padding),
+            behavior: 'smooth'
+          });
+        } else if (elementBottom > containerBottom - padding) {
+          dropdownElement.scrollTo({
+            top: elementBottom - dropdownElement.offsetHeight + padding,
+            behavior: 'smooth'
+          });
         }
       }
     }
@@ -153,20 +158,27 @@ const SearchableCombobox = ({
         e.preventDefault();
         if (!isOpen) {
           setIsOpen(true);
-          setHighlightedIndex(0);
+          // Set highlighted index after dropdown opens for smooth experience
+          setTimeout(() => setHighlightedIndex(0), 50);
         } else {
-          setHighlightedIndex(prev => 
-            prev < filteredOptions.length - 1 ? prev + 1 : 0
-          );
+          setHighlightedIndex(prev => {
+            const nextIndex = prev < filteredOptions.length - 1 ? prev + 1 : 0;
+            return nextIndex;
+          });
         }
         break;
         
       case 'ArrowUp':
         e.preventDefault();
-        if (isOpen) {
-          setHighlightedIndex(prev => 
-            prev > 0 ? prev - 1 : filteredOptions.length - 1
-          );
+        if (!isOpen) {
+          setIsOpen(true);
+          // Set to last item when opening with up arrow
+          setTimeout(() => setHighlightedIndex(filteredOptions.length - 1), 50);
+        } else {
+          setHighlightedIndex(prev => {
+            const nextIndex = prev > 0 ? prev - 1 : filteredOptions.length - 1;
+            return nextIndex;
+          });
         }
         break;
         
@@ -175,6 +187,9 @@ const SearchableCombobox = ({
         if (isOpen && highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
           const option = filteredOptions[highlightedIndex];
           selectOption(option);
+        } else if (!isOpen) {
+          // Open dropdown when pressing enter on closed state
+          setIsOpen(true);
         }
         break;
         
@@ -209,7 +224,14 @@ const SearchableCombobox = ({
       setIsOpen(true);
     }
     
-    setHighlightedIndex(-1);
+    // Reset highlighted index when typing, but set to first option if we have results
+    setTimeout(() => {
+      if (filteredOptions.length > 0) {
+        setHighlightedIndex(0);
+      } else {
+        setHighlightedIndex(-1);
+      }
+    }, 100);
     
     // Clear selection if user clears the input
     if (newText === "") {
@@ -277,16 +299,16 @@ const SearchableCombobox = ({
       </div>
 
       {isOpen && filteredOptions.length > 0 && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-hidden">
-          <div className="max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-hidden animate-in slide-in-from-top-2 duration-200">
+          <div className="max-h-60 overflow-y-auto scroll-smooth">
             {filteredOptions.map((option, index) => (
               <div
                 key={option.value}
                 onClick={() => handleOptionClick(option)}
                 onMouseEnter={() => setHighlightedIndex(index)}
                 className={`
-                  px-3 py-2 text-sm cursor-pointer transition-colors
-                  ${index === highlightedIndex ? 'bg-purple-100 text-purple-800 font-medium' : 'hover:bg-gray-50'}
+                  px-3 py-2 text-sm cursor-pointer transition-all duration-150 ease-in-out
+                  ${index === highlightedIndex ? 'bg-purple-100 text-purple-800 font-medium transform scale-[1.02]' : 'hover:bg-gray-50'}
                   ${value === option.value ? 'bg-purple-50 text-purple-700 font-semibold' : 'text-gray-700'}
                 `}
               >

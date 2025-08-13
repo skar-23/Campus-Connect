@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import SettingsModal from "./SettingsModal";
+import { getUserAvatar, detectGenderFromName } from "@/utils/avatarUtils";
 
 interface SeniorProfileHeaderProps {
   onEdit: () => void;
@@ -35,7 +36,6 @@ const SeniorProfileHeader: React.FC<SeniorProfileHeaderProps> = ({ onEdit }) => 
     phone: "+91 9876543210",
     location: "Punjab, India",
     bio: "Passionate about technology and helping junior students navigate their academic journey. Experienced in web development, competitive programming, and mentoring.",
-    avatar: "AS",
     coverImage: "https://placehold.co/1200x300/3B82F6/FFFFFF?text=Senior+Profile+Cover",
     joinedDate: "August 2020",
     stats: {
@@ -49,16 +49,10 @@ const SeniorProfileHeader: React.FC<SeniorProfileHeaderProps> = ({ onEdit }) => 
     isAvailable: true
   };
 
-  const getAvatarColor = (name: string) => {
-    const colors = [
-      'bg-gradient-to-br from-blue-500 to-blue-600',
-      'bg-gradient-to-br from-green-500 to-green-600',
-      'bg-gradient-to-br from-purple-500 to-purple-600',
-      'bg-gradient-to-br from-orange-500 to-orange-600'
-    ];
-    const index = name.charCodeAt(0) % colors.length;
-    return colors[index];
-  };
+  // Get user avatar and gender
+  const userGender = detectGenderFromName(profileData.name);
+  const userAvatar = getUserAvatar(user?.id || 'demo-user', userGender);
+
 
   return (
     <>
@@ -118,8 +112,21 @@ const SeniorProfileHeader: React.FC<SeniorProfileHeaderProps> = ({ onEdit }) => 
             {/* Profile Avatar & Basic Info */}
             <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6 md:mb-0">
               <div className="relative">
-                <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full ${getAvatarColor(profileData.name)} flex items-center justify-center text-white text-2xl md:text-4xl font-bold border-4 border-white shadow-xl`}>
-                  {profileData.avatar}
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-xl">
+                  <img 
+                    src={userAvatar.url} 
+                    alt={profileData.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback to colored circle with initials if image fails
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = document.createElement('div');
+                      fallback.className = 'w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl md:text-4xl font-bold';
+                      fallback.textContent = profileData.name.charAt(0).toUpperCase();
+                      target.parentElement?.appendChild(fallback);
+                    }}
+                  />
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
                   <Award className="h-4 w-4 text-white" />
@@ -226,7 +233,13 @@ const SeniorProfileHeader: React.FC<SeniorProfileHeaderProps> = ({ onEdit }) => 
 
       {/* Settings Modal */}
       {showSettings && (
-        <SettingsModal onClose={() => setShowSettings(false)} />
+        <SettingsModal 
+          onClose={() => setShowSettings(false)} 
+          onEditProfile={onEdit}
+          userId={user?.id || 'demo-user'}
+          userGender={userGender}
+          currentAvatarId={userAvatar.id}
+        />
       )}
     </>
   );

@@ -6,6 +6,7 @@ import { Button } from "../components/ui/button";
 import Footer from "../components/layout/Footer";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Mail, Lock, Loader2 } from "lucide-react";
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -68,62 +69,77 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white font-['Poppins']">
-      <header className="border-b border-gray-200">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link to="/" className="text-gray-700 hover:text-gray-900">
-            Home
+          <Link to="/" className="text-gray-700 hover:text-pink-600 transition-colors font-medium">
+            ← Home
           </Link>
-          <Link to="/" className="text-[#5c7bb5] text-2xl font-semibold">
-            CampusConnect
+          <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+            Campus Connect
           </Link>
-          <div className="w-[50px]"></div>
+          <div className="w-[60px]"></div>
         </div>
       </header>
 
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Forgot Password</h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Enter your registered email to receive a verification code
+        <div className="w-full max-w-md">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              Forgot Password?
+            </h1>
+            <p className="text-sm text-gray-600">
+              No worries! Enter your registered email and we'll send you a verification code
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="email" className="block font-medium">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-gray-300 rounded h-12"
-                placeholder="Enter your registered email"
-                required
+          {/* Form Container */}
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-10 rounded-lg bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
+                    placeholder="Enter your registered email"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-10 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold shadow-lg transform hover:scale-[1.02] transition-all duration-300"
                 disabled={isLoading}
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full block text-center bg-[#7d9bd2] text-black py-2.5 px-4 rounded-full hover:bg-[#6b89c0] transition-colors"
-              disabled={isLoading}
-            >
-              {isLoading ? "Sending..." : "Send Verification Code"}
-            </Button>
-
-            <div className="text-center mt-4">
-              <Link
-                to="/junior-login"
-                className="text-sm text-[#5c7bb5] hover:underline"
               >
-                Back to Login
-              </Link>
-            </div>
-          </form>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading ? "Sending Code..." : "Send Verification Code"}
+              </Button>
+
+              <div className="text-center pt-4 border-t border-gray-100">
+                <Link
+                  to="/"
+                  className="text-sm text-purple-600 hover:text-purple-700 hover:underline font-medium"
+                >
+                  ← Back to Login
+                </Link>
+              </div>
+            </form>
+          </div>
         </div>
       </main>
 
