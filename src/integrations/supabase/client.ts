@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { Tables } from '@/types/database';
 
-const SUPABASE_URL = "https://zictxtoipuuttufngcwu.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppY3R4dG9pcHV1dHR1Zm5nY3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5OTM2MzUsImV4cCI6MjA3MDU2OTYzNX0.NZKToUoqik7qKGaJKbIb2FuGxaYuu7bIJHkFYun9vHk";
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -19,4 +19,3 @@ export const getJuniorProfiles = () => {
 export const getSeniorProfiles = () => {
   return supabase.from('seniors');
 };
-
