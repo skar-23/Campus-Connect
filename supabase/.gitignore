@@ -1,0 +1,4 @@
+# Supabase local development files
+.temp/
+.env
+functions/.env
