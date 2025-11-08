@@ -142,9 +142,12 @@ function AppContent() {
 }
 
 function App() {
+  // Get the base path for GitHub Pages
+  const basename = import.meta.env.PROD ? '/Campus-Connect' : '';
+  
   return (
     <LoadingProvider>
-      <Router>
+      <Router basename={basename}>
         <AppContent />
       </Router>
     </LoadingProvider>

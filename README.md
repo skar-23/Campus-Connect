@@ -71,3 +71,20 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## How can I deploy to GitHub Pages?
+
+This project is configured for automatic deployment to GitHub Pages. Here's how it works:
+
+1. **Automatic Deployment**: Every push to the `main` branch triggers an automatic build and deployment via GitHub Actions.
+
+2. **Manual Setup**: To enable GitHub Pages for your repository:
+   - Go to your repository on GitHub
+   - Navigate to Settings > Pages
+   - Under "Source", select "GitHub Actions"
+   - The workflow will automatically deploy your site
+
+3. **Access Your Site**: Once deployed, your site will be available at:
+   `https://[your-username].github.io/Campus-Connect/`
+
+4. **Local Development**: For local development, the app runs with base path `/` (root), but production builds use `/Campus-Connect/` for GitHub Pages compatibility.
